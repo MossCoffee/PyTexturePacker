@@ -3,7 +3,7 @@ This is a branch of PyTexturePacker intended to solve a very specific use case.
 Given a sprite that is made of a pair of images: one for the outline and one for the shading. The each half of the sprite must be on a different different image sheet and the.  The outline of a given sprite must have the same uv coordiates as it's shading. 
 
 
-The original read me is below.
+The original read me is below
 ==========================================================
 
 PyTexturePacker is an open source python package, released under the MIT License.
