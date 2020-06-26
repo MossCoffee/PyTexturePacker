@@ -36,7 +36,7 @@ class AtlasInterface(object):
 
         self.image_rect_list = []
 
-    def dump_plist(self, texture_file_name="", input_base_path=None):
+    def dump_plist(self, texture_file_name="", input_base_path=None): #creates the atlas
         import os
 
         plist_data = {}

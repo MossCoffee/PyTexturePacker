@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 """----------------------------------------------------------------------------
-Author:
-    Huang Quanyong (wo1fSea)
-    quanyongh@foxmail.com
+Authors:
+    Huang Quanyong (wo1fSea) quanyongh@foxmail.com
+    Taylor Riviera
 Date:
-    2016/10/19
+    2020/06/26
 Description:
     PackerInterface.py
 ----------------------------------------------------------------------------"""
@@ -155,6 +155,18 @@ class PackerInterface(object):
     def _pack(self, image_rect_list):
         raise NotImplementedError
 
+    def packWithMatchingUVs(self, input_images_list, output_name, output_path="", input_base_path=None):
+        #The basic idea is:
+        #Check that all of the file names match
+        #run FILE LOADING
+        #run PART 1 (this is the packing step)
+        #save the data from part 1 for use in second loop
+        #Run PART 2
+        #Run File Loading
+        #Run PART 1 with modified trim mode. This trim mode cuts to the first loops packing sizes
+        #Run PART 2
+        raise NotImplementedError
+
     def pack(self, input_images, output_name, output_path="", input_base_path=None):
         """
         pack the input images to sheets
@@ -164,13 +176,13 @@ class PackerInterface(object):
         :param input_base_path: the base path of input files
         :return:
         """
-
+        ##FILE LOADING
         if isinstance(input_images, (tuple, list)):
             image_rects = Utils.load_images_from_paths(input_images)
         else:
-            image_rects = Utils.load_images_from_dir(input_images)
-
-        if self.trim_mode:
+            image_rects = Utils.load_images_from_dir(input_images) #We need to jerry rig this, or create a new function
+        ##PART 1
+        if self.trim_mode: #I think viv wants this on?
             for image_rect in image_rects:
                 image_rect.trim(self.trim_mode)
         
@@ -181,18 +193,20 @@ class PackerInterface(object):
         atlas_list = self._pack(image_rects)
 
         assert "%d" in output_name or len(atlas_list) == 1, 'more than one output image, but no "%d" in output_name'
-
+        ###PART 2 (this can totally be a helper function)
         for i, atlas in enumerate(atlas_list):
             texture_file_name = output_name if "%d" not in output_name else output_name % i
 
-            packed_plist = atlas.dump_plist("%s%s" % (texture_file_name, self.texture_format), input_base_path)
-            packed_image = atlas.dump_image(self.bg_color)
+             #Note: the XML file is referred to as plist basically everywhere
+            packed_plist = atlas.dump_plist("%s%s" % (texture_file_name, self.texture_format), input_base_path) #create the xml file 
+            packed_image = atlas.dump_image(self.bg_color) #create the texture sheet
 
             if self.reduce_border_artifacts:
                 packed_image = Utils.alpha_bleeding(packed_image)
 
-            Utils.save_plist(packed_plist, os.path.join(output_path, "%s.plist" % texture_file_name))
-            Utils.save_image(packed_image, os.path.join(output_path, "%s%s" % (texture_file_name, self.texture_format)))
+            Utils.save_plist(packed_plist, os.path.join(output_path, "%s.plist" % texture_file_name)) #save xml file (probably)
+            Utils.save_image(packed_image, os.path.join(output_path, "%s%s" % (texture_file_name, self.texture_format)))  #save texture atlas
+        #######end helper function
 
     def multi_pack(self, pack_args_list):
         """
