@@ -14,6 +14,23 @@ if sys.version_info.major > 2:
 
 SUPPORTED_IMAGE_FORMAT = [".png", ".jpg", ".bmp"]
 
+def load_filenames_from_dir(dir_path):
+    """
+    List all the filenames in a directory
+    :param dir_path: directory path
+    :return: str list
+    """
+    import os
+
+    image_filenames = []
+    for _, _, files in os.walk(dir_path):
+        for f in files:
+            _, ext = os.path.splitext(f)
+            if ext.lower() in SUPPORTED_IMAGE_FORMAT:
+                image_filenames.append(f)
+    
+    return image_filenames
+
 
 def load_images_from_paths(image_path_list):
     """

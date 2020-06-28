@@ -155,17 +155,51 @@ class PackerInterface(object):
     def _pack(self, image_rect_list):
         raise NotImplementedError
 
-    def packWithMatchingUVs(self, input_images_list, output_name, output_path="", input_base_path=None):
-        #The basic idea is:
-        #Check that all of the file names match
-        #run FILE LOADING
-        #run PART 1 (this is the packing step)
-        #save the data from part 1 for use in second loop
-        #Run PART 2
-        #Run File Loading
-        #Run PART 1 with modified trim mode. This trim mode cuts to the first loops packing sizes
-        #Run PART 2
-        raise NotImplementedError
+    def export_atlas(self, atlas_list, output_name, output_path, input_base_path, export_plist = True) :
+        for i, atlas in enumerate(atlas_list):
+            texture_file_name = output_name if "%d" not in output_name else output_name % i
+
+             #Note: the XML file is referred to as plist basically everywhere
+            if export_plist: 
+                packed_plist = atlas.dump_plist("%s%s" % (texture_file_name, self.texture_format), input_base_path) #create the xml file 
+            packed_image = atlas.dump_image(self.bg_color) #create the texture sheet
+
+            if self.reduce_border_artifacts:
+                packed_image = Utils.alpha_bleeding(packed_image)
+
+            if export_plist: 
+                Utils.save_plist(packed_plist, os.path.join(output_path, "%s.plist" % texture_file_name))
+            Utils.save_image(packed_image, os.path.join(output_path, "%s%s" % (texture_file_name, self.texture_format)))  #save texture atlas
+
+    def packWithMatchingUVs(self, input_dir_list, output_name, output_path="", input_base_path=None):
+        import collections
+        assert len(input_dir_list) >= 2, "packWithMatchingUVs requires at least two directories"
+
+        file_names = list()
+        #A dictionary of filenames to Bounding boxes
+        UVs = dict()
+        generate_plist = True
+
+        for dir in input_dir_list:
+          #Check that all of the file names match
+            if len(file_names) != 0:
+                new_file_names = Utils.load_filenames_from_dir(dir)
+                assert collections.Counter(file_names) == collections.Counter(new_file_names), "packWithMatchingUVs requires all input directories to contain the same file names"
+            else:
+                file_names = Utils.load_filenames_from_dir(dir)
+
+            image_rects = Utils.load_images_from_dir(dir)
+            for image_rect in image_rects:
+                bbox = image_rect.trimMatchBoundingBox(UVs.get(image_rect.file_name), 1)
+                if bbox:
+                    UVs.update({image_rect.file_name : bbox})
+
+            atlas_list = self._pack(image_rects)
+
+            assert "%d" in output_name or len(atlas_list) == 1, 'more than one output image, but no "%d" in output_name'
+
+            self.export_atlas(atlas_list, output_name, dir, input_base_path, generate_plist)
+            generate_plist = False
 
     def pack(self, input_images, output_name, output_path="", input_base_path=None):
         """
@@ -194,20 +228,9 @@ class PackerInterface(object):
 
         assert "%d" in output_name or len(atlas_list) == 1, 'more than one output image, but no "%d" in output_name'
         ###PART 2 (this can totally be a helper function)
-        for i, atlas in enumerate(atlas_list):
-            texture_file_name = output_name if "%d" not in output_name else output_name % i
-
-             #Note: the XML file is referred to as plist basically everywhere
-            packed_plist = atlas.dump_plist("%s%s" % (texture_file_name, self.texture_format), input_base_path) #create the xml file 
-            packed_image = atlas.dump_image(self.bg_color) #create the texture sheet
-
-            if self.reduce_border_artifacts:
-                packed_image = Utils.alpha_bleeding(packed_image)
-
-            Utils.save_plist(packed_plist, os.path.join(output_path, "%s.plist" % texture_file_name)) #save xml file (probably)
-            Utils.save_image(packed_image, os.path.join(output_path, "%s%s" % (texture_file_name, self.texture_format)))  #save texture atlas
+        self.export_atlas(atlas_list, output_name, output_path, input_base_path)
         #######end helper function
-
+    
     def multi_pack(self, pack_args_list):
         """
         pack with multiprocessing

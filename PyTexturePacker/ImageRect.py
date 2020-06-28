@@ -25,6 +25,7 @@ class ImageRect(Rect):
 
         self.image = None
         self.image_path = None
+        self.file_name = None
         self.source_size = (0, 0)
         self.source_box = (0, 0, 0, 0)
 
@@ -55,11 +56,13 @@ class ImageRect(Rect):
             return tuple(0, 0, self.width, self.height)
 
     def load_image(self, image_path):
+        import os
         image = Image.open(image_path)
         self.image = image.copy()
         image.close()
 
         self.image_path = image_path
+        self.file_name = os.path.split(image_path)[1]
 
         self.x, self.y = 0, 0
         self.width, self.height = self.image.size
@@ -89,6 +92,21 @@ class ImageRect(Rect):
             self.width, self.height = self.image.size
 
         self._trimmed = True
+
+    def trimMatchBoundingBox(self, bbox, v=1):
+        #This runs "trim" as normal if passed an empty array, 
+        #if passed a bounding box, it will copy over the bounding box
+        if self._trimmed:
+            return
+        
+        if bbox:
+            self.image = self.image.crop(bbox)
+            self.source_box = bbox
+            self.width, self.height = self.image.size
+            return None
+        else:
+            self.trim
+            return self.source_box
     
     def extrude(self, size=0):
         if size <= 0:
