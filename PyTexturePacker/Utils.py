@@ -82,6 +82,21 @@ def save_plist(data_dict, file_path):
     else:
         plistlib.writePlist(data_dict, file_path)
 
+def save_json(data_dict, file_path):
+    """
+    save a dict as a json file
+    :param data_dict: dict data
+    :param file_path: plist file path to save
+    :return:
+    """
+    import json
+
+    with open(file_path, 'wt') as fp:
+        json_output = json.dumps(data_dict)
+        fp.write(json_output)
+        fp.close()
+    #else:
+    #    json.writePlist(data_dict, file_path)
 
 def save_image(image, file_path):
     """

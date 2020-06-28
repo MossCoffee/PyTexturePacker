@@ -19,7 +19,7 @@ def pack():
     # pack texture images under the directorys "outlines/" and "colors/" and name the output images "test_case".
     # all images will be packed using the uvs of the images from the first directory
     imageLocations = ["outlines/", "colors/"]
-    packer.packWithMatchingUVs(imageLocations, "test_image%d", "")
+    packer.packWithMatchingUVs(imageLocations, "test_image%d", "output/")
 
 def pack_test():
     # create a MaxRectsPacker
@@ -30,7 +30,7 @@ def pack_test():
     packer.pack("outlines/", "test_image%d", "")
 
 def main():
-    pack_test()
+    pack()
 
 
 if __name__ == '__main__':

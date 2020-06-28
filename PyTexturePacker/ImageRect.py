@@ -105,7 +105,7 @@ class ImageRect(Rect):
             self.width, self.height = self.image.size
             return None
         else:
-            self.trim
+            self.trim()
             return self.source_box
     
     def extrude(self, size=0):
