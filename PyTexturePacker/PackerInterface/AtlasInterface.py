@@ -36,6 +36,43 @@ class AtlasInterface(object):
 
         self.image_rect_list = []
 
+    def dump_json(self, texture_file_name="", input_base_path=None):
+        import os
+        json_data = {}
+        frames = {}
+
+        for image_rect in self.image_rect_list :
+            width, height = (image_rect.width - 2 * image_rect.extrude_size, image_rect.height - 2 * image_rect.extrude_size) \
+                if not image_rect.rotated else (image_rect.height - 2 * image_rect.extrude_size, image_rect.width - 2 * image_rect.extrude_size)
+
+            path = image_rect.image_path
+            if input_base_path is None:
+                _, path = os.path.split(path)
+            else:
+                path = os.path.relpath(os.path.abspath(path), os.path.abspath(input_base_path))
+
+            frames[path] = dict(
+
+                frame=dict(x=image_rect.x + image_rect.extrude_size,y=image_rect.y + image_rect.extrude_size,w=width,h=height),
+                trimmed=bool(image_rect.trimmed),
+                rotated=bool(image_rect.rotated),
+                spriteSourceSize=dict(x=image_rect.source_box[0],y=image_rect.source_box[1],w=width,h=height),
+                sourceSize=dict(w=image_rect.source_size[0],h=image_rect.source_size[1])
+            )
+
+            json_data["frames"] = frames
+            json_data["meta"] = dict(
+              app="https://www.codeandweb.com/texturepacker",
+              version="1.0",
+              target="paper2d",
+              format="RGBA888",
+              image=texture_file_name,
+              scale=int(1),
+              size=dict(w=self.size[0],h=self.size[1]),
+              smartupdate= "$TexturePacker:SmartUpdate:a90b8e0c56fc6ef35da37b615cd0b275:c6ddb2a2d2b923c9eddfa6d201564d99:dab26f69292267f023d4c739e3ee8bc0$",
+           )
+        return json_data
+
     def dump_plist(self, texture_file_name="", input_base_path=None): #creates the atlas
         import os
 

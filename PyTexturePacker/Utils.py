@@ -92,8 +92,7 @@ def save_json(data_dict, file_path):
     import json
 
     with open(file_path, 'wt') as fp:
-        json_output = json.dumps(data_dict)
-        fp.write(json_output)
+        json.dump(data_dict, fp)
         fp.close()
     #else:
     #    json.writePlist(data_dict, file_path)

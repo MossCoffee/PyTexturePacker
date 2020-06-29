@@ -161,14 +161,14 @@ class PackerInterface(object):
 
              #Note: the XML file is referred to as plist basically everywhere
             if export_plist: 
-                packed_plist = atlas.dump_plist("%s%s" % (texture_file_name, self.texture_format), input_base_path) #create the xml file 
+                packed_plist = atlas.dump_json("%s%s" % (texture_file_name, self.texture_format), input_base_path) #create the xml file 
             packed_image = atlas.dump_image(self.bg_color) #create the texture sheet
 
             if self.reduce_border_artifacts:
                 packed_image = Utils.alpha_bleeding(packed_image)
 
             if export_plist: 
-                Utils.save_json(packed_plist, os.path.join(output_path, "%s.plist" % texture_file_name))
+                Utils.save_json(packed_plist, os.path.join(output_path, "%s.paper2dsprites" % texture_file_name))
             Utils.save_image(packed_image, os.path.join(output_path, "%s%s" % (texture_file_name, self.texture_format)))  #save texture atlas
 
     def packWithMatchingUVs(self, input_dir_list, output_name, output_path="", input_base_path=None):
@@ -176,9 +176,9 @@ class PackerInterface(object):
         assert len(input_dir_list) >= 2, "packWithMatchingUVs requires at least two directories"
 
         file_names = list()
+        create_json = True
         #A dictionary of filenames to Bounding boxes
         UVs = dict()
-        generate_plist = True
         iter = 1
         for dir in input_dir_list:
           #Check that all of the file names match
@@ -198,8 +198,8 @@ class PackerInterface(object):
 
             assert "%d" in output_name or len(atlas_list) == 1, 'more than one output image, but no "%d" in output_name'
 
-            self.export_atlas(atlas_list, output_name + str(iter), output_path, input_base_path, generate_plist)
-            generate_plist = False
+            self.export_atlas(atlas_list, output_name + str(iter), output_path, input_base_path, create_json)
+            create_json = False
             iter += 1
 
     def pack(self, input_images, output_name, output_path="", input_base_path=None):

@@ -14,8 +14,9 @@ from PyTexturePacker import Packer
 
 def pack():
     # create a MaxRectsPacker
-    packer = Packer.create(max_width=4096, max_height=4096, bg_color=0xffffff00)
+    packer = Packer.create(max_width=4096, max_height=4096)
     packer.trim_mode = 1
+    
     # pack texture images under the directorys "outlines/" and "colors/" and name the output images "test_case".
     # all images will be packed using the uvs of the images from the first directory
     imageLocations = ["outlines/", "colors/"]
