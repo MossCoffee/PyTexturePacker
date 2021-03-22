@@ -6,3 +6,5 @@ build
 dist
 PyTexturePacker.egg-info
 MANIFEST
+*.png
+output/test_image01.paper2dsprites

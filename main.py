@@ -10,17 +10,21 @@ Description:
 ----------------------------------------------------------------------------"""
 
 from PyTexturePacker import Packer
+import argparse
 
-
-def pack():
+#pass in a "target Directory here - use it to modify image locations, and output"
+#right now we're using a shortcut to fill in the file path & we want to pass it in instead
+def pack(targetDirectory):
+    if targetDirectory == None:
+        targetDirectory = ""
     # create a MaxRectsPacker
     packer = Packer.create(max_width=4096, max_height=4096)
     packer.trim_mode = 1
     
     # pack texture images under the directorys "outlines/" and "colors/" and name the output images "test_case".
     # all images will be packed using the uvs of the images from the first directory
-    imageLocations = ["outlines/", "colors/"]
-    packer.packWithMatchingUVs(imageLocations, "test_image%d", "output/")
+    imageLocations = [targetDirectory + "outlines/", targetDirectory + "colors/"]
+    packer.packWithMatchingUVs(imageLocations, "test_image%d", targetDirectory + "output/")
 
 def pack_test():
     # create a MaxRectsPacker
@@ -31,7 +35,11 @@ def pack_test():
     packer.pack("outlines/", "test_image%d", "")
 
 def main():
-    pack()
+    #this is where we're going to pass it in (probably)
+    parser = argparse.ArgumentParser(description='pack two sets of textures in seperate texture sheets where one set maps on to the other [named outlines/ and colors/]')
+    parser.add_argument('--path', dest='path', type=str, help="Change target location for outlines/ and colors/ folders")
+    args = parser.parse_args()
+    pack(args.path)
 
 
 if __name__ == '__main__':
