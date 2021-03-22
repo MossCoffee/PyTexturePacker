@@ -175,19 +175,11 @@ class PackerInterface(object):
         import collections
         assert len(input_dir_list) >= 2, "packWithMatchingUVs requires at least two directories"
 
-        file_names = list()
         create_json = True
         #A dictionary of filenames to Bounding boxes
         UVs = dict()
         iter = 1
         for dir in input_dir_list:
-          #Check that all of the file names match
-            if len(file_names) != 0:
-                new_file_names = Utils.load_filenames_from_dir(dir)
-                assert collections.Counter(file_names) == collections.Counter(new_file_names), "packWithMatchingUVs requires all input directories to contain the same file names"
-            else:
-                file_names = Utils.load_filenames_from_dir(dir)
-
             image_rects = Utils.load_images_from_dir(dir)
             for image_rect in image_rects:
                 bbox = image_rect.trimMatchBoundingBox(UVs.get(image_rect.file_name), 1)
