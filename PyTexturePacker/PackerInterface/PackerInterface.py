@@ -156,8 +156,10 @@ class PackerInterface(object):
         raise NotImplementedError
 
     def export_atlas(self, atlas_list, output_name, output_path, input_base_path, export_plist = True) :
+        filenames = list()
         for i, atlas in enumerate(atlas_list):
             texture_file_name = output_name if "%d" not in output_name else output_name % i
+            filenames.append(texture_file_name)
 
              #Note: the XML file is referred to as plist basically everywhere
             if export_plist: 
@@ -170,6 +172,9 @@ class PackerInterface(object):
             if export_plist: 
                 Utils.save_json(packed_plist, os.path.join(output_path, "%s.paper2dsprites" % texture_file_name))
             Utils.save_image(packed_image, os.path.join(output_path, "%s%s" % (texture_file_name, self.texture_format)))  #save texture atlas
+        return filenames
+
+        
 
     def packWithMatchingUVs(self, input_dir_list, output_name, output_path="", input_base_path=None):
         import collections
@@ -178,6 +183,7 @@ class PackerInterface(object):
         create_json = True
         #A dictionary of filenames to Bounding boxes
         UVs = dict()
+        outputFilenames = list() #hacky, if reworking this code then remove this
         iter = 1
         for dir in input_dir_list:
             image_rects = Utils.load_images_from_dir(dir)
@@ -190,9 +196,11 @@ class PackerInterface(object):
 
             assert "%d" in output_name or len(atlas_list) == 1, 'more than one output image, but no "%d" in output_name'
 
-            self.export_atlas(atlas_list, output_name + str(iter), output_path, input_base_path, create_json)
+            outputFilenames = self.export_atlas(atlas_list, output_name + str(iter), output_path, input_base_path, create_json)
+
             create_json = False
             iter += 1
+        return outputFilenames
 
     def pack(self, input_images, output_name, output_path="", input_base_path=None):
         """
