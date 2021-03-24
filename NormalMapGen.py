@@ -3,11 +3,13 @@ Taken from: Mehdi-Antoine
 Link to original: https://github.com/Mehdi-Antoine/NormalMapGenerator
 '''
 
+import imageio
 import numpy as np
 import scipy.ndimage
 import scipy.misc
 from scipy import ndimage
 import argparse
+import os
 
 
 def smooth_gaussian(im, sigma):
@@ -87,10 +89,18 @@ def compute_normal_map(gradient_x, gradient_y, intensity=1):
 
 
 def generateNormals(inputFile, path, sigma, intensity):
-    
-    output_file = path + "/output" # + "/normals.png"
+    filepath = ""
+    if(path == ""):
+        print( "path == \'\'")
+        dirname = os.path.dirname(__file__)
+        filepath = dirname + "\\output\\"
+        print (dirname + "," + filepath)
+    else:
+        print( "path != \'\'")
+        filepath = path + "\\output\\"
+    output_file = filepath + "normals.png"
 
-    im = ndimage.imread(inputFile)
+    im = imageio.imread(filepath + inputFile + ".png")
 
     if im.ndim == 3:
         im_grey = np.zeros((im.shape[0],im.shape[1])).astype(float)
@@ -103,7 +113,7 @@ def generateNormals(inputFile, path, sigma, intensity):
 
     normal_map = compute_normal_map(sobel_x, sobel_y, intensity)
 
-    scipy.misc.imsave(output_file, normal_map)
+    imageio.imsave(output_file, normal_map)
 
 
 
