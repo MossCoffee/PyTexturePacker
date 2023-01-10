@@ -176,27 +176,26 @@ class PackerInterface(object):
 
         
 
-    def packWithMatchingUVs(self, input_dir_list, output_name, output_path="", input_base_path=None):
+    def packWithMatchingUVs(self, input_dir_list, output_path, input_base_path):
         import collections
         assert len(input_dir_list) >= 2, "packWithMatchingUVs requires at least two directories"
 
         create_json = True
         #A dictionary of filenames to Bounding boxes
         UVs = dict()
-        outputFilenames = list() #hacky, if reworking this code then remove this
+        outputFilenames = list()
         iter = 1
         for dir in input_dir_list:
-            image_rects = Utils.load_images_from_dir(dir)
+            image_rects = Utils.load_images_from_dir(input_base_path + "\\" + dir)
             for image_rect in image_rects:
                 bbox = image_rect.trimMatchBoundingBox(UVs.get(image_rect.file_name), 1)
                 if bbox:
                     UVs.update({image_rect.file_name : bbox})
 
             atlas_list = self._pack(image_rects)
+            output_name = dir
 
-            assert "%d" in output_name or len(atlas_list) == 1, 'more than one output image, but no "%d" in output_name'
-
-            outputFilenames = self.export_atlas(atlas_list, output_name + str(iter), output_path, input_base_path, create_json)
+            outputFilenames = self.export_atlas(atlas_list, output_name, input_base_path + "\\" + output_path, input_base_path, create_json)
 
             create_json = False
             iter += 1
