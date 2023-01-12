@@ -13,22 +13,17 @@ from PyTexturePacker import Packer
 import NormalMapGen
 import argparse
 
-#pass in a "target Directory here - use it to modify image locations, and output"
-#right now we're using a shortcut to fill in the file path & we want to pass it in instead
+
 def pack(targetDirectory):
     if targetDirectory == None:
-        targetDirectory = ""
-    # create a MaxRectsPacker
-    packer = Packer.create(max_width=4096, max_height=4096, bg_color=(1,1,1,1))
-    packer.trim_mode = 1
+        targetDirectory = "" #local directory
     
-    # pack texture images under the directorys "outlines/" and "colors/" and name the output images "test_case".
-    # all images will be packed using the uvs of the images from the first directory
-    imageLocations = ["outlines", "colors", "masks"]
-    return packer.packWithMatchingUVs(imageLocations, "output" , targetDirectory)
+    packer = Packer.create(max_width=4096, max_height=4096,trim_mode=1,bg_color=(255,255,255,255),border_padding=5,reduce_border_artifacts=False,enable_rotated=False)
+    
+    inputFolderNames = ["outlines", "colors", "masks"]
+    return packer.packWithMatchingUVs(inputFolderNames, "output" , targetDirectory)
 
 def main():
-    #this is where we're going to pass it in (probably)
     parser = argparse.ArgumentParser(description='pack two sets of textures in seperate texture sheets where one set maps on to the other [named outlines/ and colors/]')
     parser.add_argument('-p', '--path', default="", dest='path', type=str, help="Change target location for outlines/ and colors/ folders")
     parser.add_argument('-n', '--normals', default=False, dest='normalsEnabled', type=bool, help="Enable the generation of normal map using the colors generated from output")
@@ -36,11 +31,13 @@ def main():
     parser.add_argument('-it', '--intensity', default=1., type=float, help='requires --normals intensity of the normal map')
 
     args = parser.parse_args()
-    filePathList = pack(args.path)
-    if(args.normalsEnabled != None and args.normalsEnabled) :
-        for imagePath in filePathList:
-            NormalMapGen.generateNormals(imagePath, args.path, args.smooth, args.intensity)
-
+    filePathList = pack(args.path) #this should create a temp folder
+    #invert outlines & put it on a black background
+    #greyscale the colors & put it on a black background
+    #make temp variant of the colors where all transparent pixels are black & all opaque pixels are white
+    #generate normals using the temp variant
+    NormalMapGen.generateNormals("colors", args.path, args.smooth, args.intensity)
+    #put masks on a black background
 
 if __name__ == '__main__':
     main()

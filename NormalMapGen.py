@@ -91,12 +91,9 @@ def compute_normal_map(gradient_x, gradient_y, intensity=1):
 def generateNormals(inputFile, path, sigma, intensity):
     filepath = ""
     if(path == ""):
-        print( "path == \'\'")
         dirname = os.path.dirname(__file__)
         filepath = dirname + "\\output\\"
-        print (dirname + "," + filepath)
     else:
-        print( "path != \'\'")
         filepath = path + "\\output\\"
     output_file = filepath + "normals.png"
 
@@ -114,25 +111,3 @@ def generateNormals(inputFile, path, sigma, intensity):
     normal_map = compute_normal_map(sobel_x, sobel_y, intensity)
 
     imageio.imsave(output_file, normal_map)
-
-
-
-
-
-
-
-
-
-    
-    
-
-
-
-
-
-
-
-
-
-
-

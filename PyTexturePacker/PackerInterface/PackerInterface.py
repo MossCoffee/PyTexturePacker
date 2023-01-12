@@ -175,7 +175,6 @@ class PackerInterface(object):
         return filenames
 
         
-
     def packWithMatchingUVs(self, input_dir_list, output_path, input_base_path):
         import collections
         assert len(input_dir_list) >= 2, "packWithMatchingUVs requires at least two directories"
@@ -216,7 +215,7 @@ class PackerInterface(object):
         else:
             image_rects = Utils.load_images_from_dir(input_images) #We need to jerry rig this, or create a new function
         ##PART 1
-        if self.trim_mode: #I think viv wants this on?
+        if self.trim_mode:
             for image_rect in image_rects:
                 image_rect.trim(self.trim_mode)
         
