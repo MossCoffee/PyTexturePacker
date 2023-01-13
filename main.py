@@ -86,33 +86,49 @@ def createNormalMapBase(filename, workingDir, outputFilename=None, outputDir=Non
     return
 
 def main():
-    parser = argparse.ArgumentParser(description='pack two sets of textures in seperate texture sheets where one set maps on to the other [named outlines/ and colors/]')
-    parser.add_argument('-p', '--path', default="", dest='path', type=str, help="Change target location for outlines/ and colors/ folders")
-    parser.add_argument('-n', '--normals', default=False, dest='normalsEnabled', type=bool, help="Enable the generation of normal map using the colors generated from output")
-    parser.add_argument('-s', '--smooth', default=0., type=float, help='requires --normals smooth gaussian blur applied on the image')
-    parser.add_argument('-it', '--intensity', default=1., type=float, help='requires --normals intensity of the normal map')
+    parser = argparse.ArgumentParser(description='|| VivSpriteTexturePacker || Texture Packer for the VivSprite art pipeline. Use this command line by typing \"python3 main.py [optional arguments]" in your current directory')
+    parser.add_argument('-p', '--path', default="", dest='path', type=str, help="\"-p=\"C:\\path\"\" to use - Sets the working directory")
+    #Toggle steps options
+    parser.add_argument('-v', '--verify', default=False, dest='verify', type=bool, help="\"-v=True\" to enable - Enables the verify packing step")
+    parser.add_argument('-pk', '--packing', default=False, dest='packing', type=bool, help="\"-pk=True\" to enable - Enables the texture packing step")
+    parser.add_argument('-o', '--outlines', default=False, dest='outlines', type=bool, help="\"-o=True\" to enable - Enables the outlines processing step")
+    parser.add_argument('-c', '--colors', default=False, dest='colors', type=bool, help="\"-c=True\" to enable - Enables the colors processing step")
+    parser.add_argument('-m', '--masks', default=False, dest='masks', type=bool, help="\"-m=True\" to enable - Enables the masks processing step")
+    parser.add_argument('-n', '--normals', default=False, dest='normals', type=bool, help="\"-no=True\" to enable - Enable the generation of normal map using the colors generated from output")
+    #normals options
+    parser.add_argument('-s', '--smooth', default=0., type=float, help='\"-s=3\" to use - Set smooth gaussian blur applied on the image')
+    parser.add_argument('-it', '--intensity', default=1., type=float, help='\"-it=6.0\" to use - Set Intensity of the normal map')
 
     inputFolderNames = ["outlines", "colors", "masks"]
     args = parser.parse_args()
-    if(not verifyFolderStructure(args.path, inputFolderNames)):
-        print("Failed to verify folder structure, aborting.")
-        return
 
-    filePathList = pack(args.path,inputFolderNames) #this should create a temp folder
+    allStepsEnabled = not (args.verify or args.packing or args.outlines or args.colors or args.masks or args.normals)
+
+    if allSteps or args.verify:
+        if(not verifyFolderStructure(args.path, inputFolderNames)):
+            print("Failed to verify folder structure, aborting.")
+            return
+    
+    if allSteps or args.packing:
+        filePathList = pack(args.path,inputFolderNames)
+
     intermediateFilePath = args.path + "\\intermediate\\"
     outputFilePath = args.path + "\\output\\"
 
-    #invert outlines & put it on a black background
-    fillAlphaWithColor("outlines", intermediateFilePath, outputFilename="outlines_background", color="white")
-    invertImage("outlines_background", intermediateFilePath, outputFilename="outlines", outputDir=outputFilePath)
-    #put the colors & on a black background
-    fillAlphaWithColor("colors", intermediateFilePath, outputDir=outputFilePath)
-    fillAlphaWithColor("masks", intermediateFilePath, outputDir=outputFilePath)
-    #make temp variant of the colors where all transparent pixels are black & all opaque pixels are white
-    createNormalMapBase("masks", intermediateFilePath, outputFilename="normal_map_base")
-    #generate normals using the temp variant
-    NormalMapGen.generateNormals("normal_map_base", args.path, "\\intermediate\\", "\\output\\", args.smooth, args.intensity)
-    #put masks on a black background
+    if allStepsEnabled or args.outlines:
+        #add a white background to the outlines
+        fillAlphaWithColor("outlines", intermediateFilePath, outputFilename="outlines_background", color="white")
+        #invert the image
+        invertImage("outlines_background", intermediateFilePath, outputFilename="outlines", outputDir=outputFilePath)
+    if allStepsEnabled or args.colors:
+        fillAlphaWithColor("colors", intermediateFilePath, outputDir=outputFilePath)
+    if allStepsEnabled or args.masks:
+        fillAlphaWithColor("masks", intermediateFilePath, outputDir=outputFilePath)
+    if allStepsEnabled or args.normals:
+        #make temp variant of the colors where all transparent pixels are black & all opaque pixels are white
+        createNormalMapBase("masks", intermediateFilePath, outputFilename="normal_map_base")
+        #generate normals using the temp variant
+        NormalMapGen.generateNormals("normal_map_base", args.path, "\\intermediate\\", "\\output\\", args.smooth, args.intensity)
 
 if __name__ == '__main__':
     main()
