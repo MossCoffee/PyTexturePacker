@@ -13,11 +13,12 @@ from PyTexturePacker import Packer
 import NormalMapGen
 import argparse
 import os
+import PIL as Image
 
 
 
 def pack(targetDirectory, inputFolderNames):
-    packer = Packer.create(max_width=4096, max_height=4096,trim_mode=1,bg_color=(255,255,255,255),border_padding=5,reduce_border_artifacts=False,enable_rotated=False)
+    packer = Packer.create(max_width=4096, max_height=4096,trim_mode=1,border_padding=5,reduce_border_artifacts=False,enable_rotated=False)
     return packer.packWithMatchingUVs(inputFolderNames, "intermediate", "output", targetDirectory)
 
 def verifyFolderStructure(inPath, inputFolderNames):
@@ -46,7 +47,11 @@ def verifyFolderStructure(inPath, inputFolderNames):
             
     return output
 
-def overlayColors(inputPath, outputPath):
+def overlayColors(filename ,inputPath, outputPath, color):
+    #background = Image.open(inputPath + filename)
+    #foreground = Image.open("test2.png")
+
+    #Image.alpha_composite(background, foreground).save("test3.png")
     return
 
 def main():
