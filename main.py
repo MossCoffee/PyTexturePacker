@@ -12,16 +12,42 @@ Description:
 from PyTexturePacker import Packer
 import NormalMapGen
 import argparse
+import os
 
 
-def pack(targetDirectory):
-    if targetDirectory == None:
-        targetDirectory = "" #local directory
-    
+
+def pack(targetDirectory, inputFolderNames):
     packer = Packer.create(max_width=4096, max_height=4096,trim_mode=1,bg_color=(255,255,255,255),border_padding=5,reduce_border_artifacts=False,enable_rotated=False)
+    return packer.packWithMatchingUVs(inputFolderNames, "intermediate", "output", targetDirectory)
+
+def verifyFolderStructure(inPath, inputFolderNames):
+    output = True
+    outputFolderNames = ["output","intermediate"]
+    neededFiles = inputFolderNames + outputFolderNames
+
+
+    scanPath = os.scandir(path=inPath)
+    for file in scanPath:
+        if file.is_dir():
+            for name in neededFiles:
+                if file.name == name:
+                    neededFiles.remove(name)
+                    break
     
-    inputFolderNames = ["outlines", "colors", "masks"]
-    return packer.packWithMatchingUVs(inputFolderNames, "output" , targetDirectory)
+    if len(neededFiles) > 0:
+        for name in neededFiles:
+            if name == "output":
+                os.mkdir(inPath + "\\output")
+            elif name == "intermediate":
+                os.mkdir(inPath + "\\intermediate")
+            else:
+                print("Error: missing expected folder " + name + " at given path " + inPath)
+                output = False
+            
+    return output
+
+def overlayColors(inputPath, outputPath):
+    return
 
 def main():
     parser = argparse.ArgumentParser(description='pack two sets of textures in seperate texture sheets where one set maps on to the other [named outlines/ and colors/]')
@@ -30,13 +56,18 @@ def main():
     parser.add_argument('-s', '--smooth', default=0., type=float, help='requires --normals smooth gaussian blur applied on the image')
     parser.add_argument('-it', '--intensity', default=1., type=float, help='requires --normals intensity of the normal map')
 
+    inputFolderNames = ["outlines", "colors", "masks"]
     args = parser.parse_args()
-    filePathList = pack(args.path) #this should create a temp folder
+    if(not verifyFolderStructure(args.path, inputFolderNames)):
+        print("Failed to verify folder structure, aborting.")
+        return
+
+    filePathList = pack(args.path,inputFolderNames) #this should create a temp folder
     #invert outlines & put it on a black background
-    #greyscale the colors & put it on a black background
+    #put the colors & on a black background
     #make temp variant of the colors where all transparent pixels are black & all opaque pixels are white
     #generate normals using the temp variant
-    NormalMapGen.generateNormals("colors", args.path, args.smooth, args.intensity)
+    NormalMapGen.generateNormals("colors", args.path, "\\intermediate\\", "\\output\\", args.smooth, args.intensity)
     #put masks on a black background
 
 if __name__ == '__main__':

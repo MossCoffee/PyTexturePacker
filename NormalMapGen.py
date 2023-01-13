@@ -88,16 +88,13 @@ def compute_normal_map(gradient_x, gradient_y, intensity=1):
     return normal_map
 
 
-def generateNormals(inputFile, path, sigma, intensity):
-    filepath = ""
-    if(path == ""):
-        dirname = os.path.dirname(__file__)
-        filepath = dirname + "\\output\\"
-    else:
-        filepath = path + "\\output\\"
-    output_file = filepath + "normals.png"
+def generateNormals(inputFile, path, inputFolder, outputFolder, sigma, intensity):
+    filepath = path
+    if(filepath == ""):
+        filepath = os.path.dirname(__file__)
+    output_file = filepath + outputFolder + "normals.png"
 
-    im = imageio.imread(filepath + inputFile + ".png")
+    im = imageio.imread(filepath + inputFolder + inputFile + ".png")
 
     if im.ndim == 3:
         im_grey = np.zeros((im.shape[0],im.shape[1])).astype(float)

@@ -155,7 +155,7 @@ class PackerInterface(object):
     def _pack(self, image_rect_list):
         raise NotImplementedError
 
-    def export_atlas(self, atlas_list, output_name, output_path, input_base_path, export_plist = True) :
+    def export_atlas(self, atlas_list, output_name, image_dir, json_dir, input_base_path, export_plist = True) :
         filenames = list()
         for i, atlas in enumerate(atlas_list):
             texture_file_name = output_name if "%d" not in output_name else output_name % i
@@ -170,12 +170,12 @@ class PackerInterface(object):
                 packed_image = Utils.alpha_bleeding(packed_image)
 
             if export_plist: 
-                Utils.save_json(packed_plist, os.path.join(output_path, "%s.paper2dsprites" % texture_file_name))
-            Utils.save_image(packed_image, os.path.join(output_path, "%s%s" % (texture_file_name, self.texture_format)))  #save texture atlas
+                Utils.save_json(packed_plist, os.path.join(json_dir, "%s.paper2dsprites" % texture_file_name))
+            Utils.save_image(packed_image, os.path.join(image_dir, "%s%s" % (texture_file_name, self.texture_format)))  #save texture atlas
         return filenames
 
         
-    def packWithMatchingUVs(self, input_dir_list, output_path, input_base_path):
+    def packWithMatchingUVs(self, input_dir_list, image_output_path, json_output_path, input_base_path):
         import collections
         assert len(input_dir_list) >= 2, "packWithMatchingUVs requires at least two directories"
 
@@ -194,7 +194,7 @@ class PackerInterface(object):
             atlas_list = self._pack(image_rects)
             output_name = dir
 
-            outputFilenames = self.export_atlas(atlas_list, output_name, input_base_path + "\\" + output_path, input_base_path, create_json)
+            outputFilenames = self.export_atlas(atlas_list, output_name, input_base_path + "\\" + image_output_path, input_base_path + "\\" + json_output_path, input_base_path, create_json)
 
             create_json = False
             iter += 1
