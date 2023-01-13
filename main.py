@@ -13,7 +13,9 @@ from PyTexturePacker import Packer
 import NormalMapGen
 import argparse
 import os
-import PIL as Image
+from PIL import Image
+from PIL import ImageColor
+import PIL.ImageOps   
 
 
 
@@ -47,11 +49,26 @@ def verifyFolderStructure(inPath, inputFolderNames):
             
     return output
 
-def overlayColors(filename ,inputPath, outputPath, color):
-    #background = Image.open(inputPath + filename)
-    #foreground = Image.open("test2.png")
+def invertImage(filename, workingDir, outputFilename=None, outputDir=None):
+    if outputFilename is None:
+        outputFilename = filename
+    if outputDir is None:
+        outputDir = workingDir
+    image = Image.open(workingDir + filename + ".png")
+    inverted_image = PIL.ImageOps.invert(image.convert(mode="RGB"))
 
-    #Image.alpha_composite(background, foreground).save("test3.png")
+    inverted_image.save(outputDir + outputFilename + ".png")
+    return
+
+def fillAlphaWithColor(filename, workingDir, outputFilename=None, outputDir=None, color="black"):
+    if outputFilename is None:
+        outputFilename = filename
+    if outputDir is None:
+        outputDir = workingDir
+    foreground = Image.open(workingDir + filename + ".png")
+    background = Image.new(foreground.mode, foreground.size, color) #color defaults to black
+
+    Image.alpha_composite(background, foreground).save(outputDir + outputFilename + ".png")
     return
 
 def main():
@@ -68,11 +85,18 @@ def main():
         return
 
     filePathList = pack(args.path,inputFolderNames) #this should create a temp folder
+    intermediateFilePath = args.path + "\\intermediate\\"
+    outputFilePath = args.path + "\\output\\"
+
     #invert outlines & put it on a black background
+    fillAlphaWithColor("outlines", intermediateFilePath, outputFilename="outlines_background", color="white")
+    invertImage("outlines_background", intermediateFilePath, outputFilename="outlines", outputDir=outputFilePath)
     #put the colors & on a black background
+    fillAlphaWithColor("colors", intermediateFilePath, outputDir=outputFilePath)
+    fillAlphaWithColor("masks", intermediateFilePath, outputDir=outputFilePath)
     #make temp variant of the colors where all transparent pixels are black & all opaque pixels are white
     #generate normals using the temp variant
-    NormalMapGen.generateNormals("colors", args.path, "\\intermediate\\", "\\output\\", args.smooth, args.intensity)
+    NormalMapGen.generateNormals("colors", args.path, "\\output\\", "\\output\\", args.smooth, args.intensity)
     #put masks on a black background
 
 if __name__ == '__main__':
