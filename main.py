@@ -104,12 +104,12 @@ def main():
 
     allStepsEnabled = not (args.verify or args.packing or args.outlines or args.colors or args.masks or args.normals)
 
-    if allSteps or args.verify:
+    if allStepsEnabled or args.verify:
         if(not verifyFolderStructure(args.path, inputFolderNames)):
             print("Failed to verify folder structure, aborting.")
             return
     
-    if allSteps or args.packing:
+    if allStepsEnabled or args.packing:
         filePathList = pack(args.path,inputFolderNames)
 
     intermediateFilePath = args.path + "\\intermediate\\"
