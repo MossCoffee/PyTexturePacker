@@ -180,16 +180,19 @@ class PackerInterface(object):
         assert len(input_dir_list) >= 2, "packWithMatchingUVs requires at least two directories"
 
         create_json = True
-        #A dictionary of filenames to Bounding boxes
+        #A dictionary of filenames to Bounding boxes 
+        #This should probably be indexes
         UVs = dict()
         outputFilenames = list()
-        iter = 1
+        iter = 0
         for dir in input_dir_list:
             image_rects = Utils.load_images_from_dir(input_base_path + "\\" + dir)
+            iter = 0
             for image_rect in image_rects:
-                bbox = image_rect.trimMatchBoundingBox(UVs.get(image_rect.file_name), 1)
+                bbox = image_rect.trimMatchBoundingBox(UVs.get(iter), 1)
                 if bbox:
-                    UVs.update({image_rect.file_name : bbox})
+                    UVs[iter] = bbox
+                iter += 1
 
             atlas_list = self._pack(image_rects)
             output_name = dir
