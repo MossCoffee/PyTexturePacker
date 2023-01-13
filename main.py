@@ -71,6 +71,20 @@ def fillAlphaWithColor(filename, workingDir, outputFilename=None, outputDir=None
     Image.alpha_composite(background, foreground).save(outputDir + outputFilename + ".png")
     return
 
+def createNormalMapBase(filename, workingDir, outputFilename=None, outputDir=None):
+    if outputFilename is None:
+        outputFilename = filename
+    if outputDir is None:
+        outputDir = workingDir
+    
+    foreground = Image.open(workingDir + filename + ".png")
+    background = Image.new(foreground.mode, foreground.size, "white")
+
+    maskedImage = Image.composite(background, foreground, foreground)
+    maskBackground = Image.new(maskedImage.mode, maskedImage.size, "black")
+    Image.alpha_composite(maskBackground, maskedImage).save(outputDir + outputFilename + ".png")
+    return
+
 def main():
     parser = argparse.ArgumentParser(description='pack two sets of textures in seperate texture sheets where one set maps on to the other [named outlines/ and colors/]')
     parser.add_argument('-p', '--path', default="", dest='path', type=str, help="Change target location for outlines/ and colors/ folders")
@@ -95,8 +109,9 @@ def main():
     fillAlphaWithColor("colors", intermediateFilePath, outputDir=outputFilePath)
     fillAlphaWithColor("masks", intermediateFilePath, outputDir=outputFilePath)
     #make temp variant of the colors where all transparent pixels are black & all opaque pixels are white
+    createNormalMapBase("masks", intermediateFilePath, outputFilename="normal_map_base")
     #generate normals using the temp variant
-    NormalMapGen.generateNormals("colors", args.path, "\\output\\", "\\output\\", args.smooth, args.intensity)
+    NormalMapGen.generateNormals("normal_map_base", args.path, "\\intermediate\\", "\\output\\", args.smooth, args.intensity)
     #put masks on a black background
 
 if __name__ == '__main__':
