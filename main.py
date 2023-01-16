@@ -19,8 +19,8 @@ import PIL.ImageOps
 
 
 
-def pack(targetDirectory, inputFolderNames):
-    packer = Packer.create(max_width=4096, max_height=4096,trim_mode=1,enable_rotated=False)
+def pack(targetDirectory, inputFolderNames, padding):
+    packer = Packer.create(max_width=4096, max_height=4096,trim_mode=1,inner_padding=padding,enable_rotated=False)
     return packer.packWithMatchingUVs(inputFolderNames, "intermediate", "output", targetDirectory)
 
 def verifyFolderStructure(inPath, inputFolderNames):
@@ -121,7 +121,8 @@ def main():
     #normals options
     parser.add_argument('-s', '--smooth', default=0., type=float, help='\"-s=3\" to use - Set smooth gaussian blur applied on the image')
     parser.add_argument('-it', '--intensity', default=1., type=float, help='\"-it=6.0\" to use - Set Intensity of the normal map')
-
+    #packing options 
+    parser.add_argument('-pad', '--padding', default=2, dest='padding', type=int, help='\"-pad=3\" to use - Set the padding in between each texture when packing')
     inputFolderNames = ["outlines", "colors", "masks"]
     args = parser.parse_args()
 
@@ -154,7 +155,7 @@ def main():
             return
     
     if allStepsEnabled or args.packing:
-        filePathList = pack(args.path,inputFolderNames)
+        filePathList = pack(args.path,inputFolderNames,args.padding)
 
     intermediateFilePath = args.path + "\\intermediate\\"
     outputFilePath = args.path + "\\output\\"
