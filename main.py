@@ -13,6 +13,7 @@ from PyTexturePacker import Packer
 import NormalMapGen
 import argparse
 import os
+import shutil
 from PIL import Image
 from PIL import ImageColor
 import PIL.ImageOps   
@@ -41,7 +42,7 @@ def newFolderFlow():
     if not hasValidFolder:
         os.mkdir(path + "\\" + name)
 
-    path = path + "\\" + name
+    path = path + "/" + name
     scanPath = os.scandir(path=path)
 
     for file in scanPath:
@@ -56,6 +57,7 @@ def newFolderFlow():
             os.mkdir(path + "\\" + name)
     
     #copy over a modfied version of the settings file, with the name & subfolder changed
+    shutil.copy(os.getcwd() + "/resources/settings.json", path + "/output/settings.json")
 
     print("Folder set up complete!")
     print("Once you've populated the folders, run the command:")

@@ -1,0 +1,47 @@
+{
+"name":"placeholder",
+"subfolder":"placeholder",
+"paper2dsprite":"outlines.paper2dsprites",
+"images": [
+{"name":"lines",
+"settings":{
+	"CompressionNoAlpha":true,
+	"TextureGroup":"Character",
+	"Downscale":2.0,
+	"CompressionNoAlpha":true,
+	"CompressionSettings":"Grayscale",
+	"SRGB":false,
+	"Filter":"Default"}
+},
+{"name":"colors",
+"settings":{
+	"CompressionNoAlpha":true,
+	"TextureGroup":"Character",
+	"Downscale":2.0,
+	"CompressionNoAlpha":true,
+	"CompressionSettings":"Grayscale",
+	"SRGB":false,
+	"Filter":"Nearest"
+}},
+{"name":"normals",
+"settings":{
+	"CompressionNoAlpha":true,
+	"TextureGroup":"CharacterNormalMap",
+	"Downscale":2.0,
+	"CompressionNoAlpha":true,
+	"CompressionSettings":"NormalMap",
+	"SRGB":false,
+	"Filter":"Default"
+}},
+{"name":"masks",
+"settings":{
+	"CompressionNoAlpha":true,
+	"TextureGroup":"Character",
+	"Downscale":2.0,
+	"CompressionNoAlpha":true,
+	"CompressionSettings":"Masks",
+	"SRGB":false,
+	"Filter":"Default"
+}}
+]
+}
