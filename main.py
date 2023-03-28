@@ -58,11 +58,20 @@ def newFolderFlow():
     
     #copy over a modfied version of the settings file, with the name & subfolder changed
     shutil.copy(os.getcwd() + "/resources/settings.json", path + "/output/settings.json")
+    modifySettingsFile(path + "/output/settings.json", name, subfolder)
 
     print("Folder set up complete!")
     print("Once you've populated the folders, run the command:")
     print("\tmain.py -p=\"" + path + "\"")
     print("To pack the textures!")
+    return
+
+def modifySettingsFile(settingsFilePath, animationName, characterName):
+    #load the file 
+    #Parse the JSON
+    #overwrite "name" with animationName
+    #overwrite "subfolder" with characterName
+    #save file
     return
 
 def verifyFolderStructure(inPath, inputFolderNames):
