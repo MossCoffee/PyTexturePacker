@@ -23,6 +23,25 @@ def pack(targetDirectory, inputFolderNames, padding):
     packer = Packer.create(max_width=4096, max_height=4096,trim_mode=1,inner_padding=padding,enable_rotated=False)
     return packer.packWithMatchingUVs(inputFolderNames, "intermediate", "output", targetDirectory)
 
+def newFolderFlow():
+    print("Where do you want to create the folders?")
+    #Path = input
+    #verify if this is a valid path, if not then re-query
+    print("What is the name of your new animation?")
+    #name = input
+    print("What character is this animation for?")
+    #Subfolder = input
+
+    #Create the new folders at path
+    #copy over a modfied version of the settings file, with the name & subfolder changed
+
+    print("Folder set up complete!")
+    print("Once you've populated the folders, run the command:")
+    print("\tmain.py -p=\"" + path + "\"")
+    print("To pack the textures!")
+    return
+
+
 def verifyFolderStructure(inPath, inputFolderNames):
     output = True
     outputFolderNames = ["output","intermediate"]
@@ -125,6 +144,11 @@ def main():
     parser.add_argument('-pad', '--padding', default=2, dest='padding', type=int, help='\"-pad=3\" to use - Set the padding in between each texture when packing')
     inputFolderNames = ["outlines", "colors", "masks"]
     args = parser.parse_args()
+    
+    #print("No path given, do you want to use the new folder flow? Y/N")
+    #if yes, call newFolderFlow() & return
+   
+
 
     allStepsEnabled = not (args.verify or args.packing or args.outlines or args.colors or args.masks or args.normals)
     if not allStepsEnabled:
