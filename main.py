@@ -25,14 +25,36 @@ def pack(targetDirectory, inputFolderNames, padding):
 
 def newFolderFlow():
     print("Where do you want to create the folders?")
-    #Path = input
-    #verify if this is a valid path, if not then re-query
+    path = queryInput()
     print("What is the name of your new animation?")
-    #name = input
+    name = queryInput()
     print("What character is this animation for?")
-    #Subfolder = input
+    subfolder = queryInput()
 
-    #Create the new folders at path
+    neededFiles = ["colors", "outlines", "masks","output","intermediate"]
+    scanPath = os.scandir(path=path)
+    hasValidFolder = False
+    for file in scanPath:
+        if file.is_dir() and file.name == name:
+            hasValidFolder
+
+    if not hasValidFolder:
+        os.mkdir(path + "\\" + name)
+
+    path = path + "\\" + name
+    scanPath = os.scandir(path=path)
+
+    for file in scanPath:
+        if file.is_dir():
+            for name in neededFiles:
+                if file.name == name:
+                    neededFiles.remove(name)
+                    break
+    
+    if len(neededFiles) > 0:
+        for name in neededFiles:
+            os.mkdir(path + "\\" + name)
+    
     #copy over a modfied version of the settings file, with the name & subfolder changed
 
     print("Folder set up complete!")
@@ -40,7 +62,6 @@ def newFolderFlow():
     print("\tmain.py -p=\"" + path + "\"")
     print("To pack the textures!")
     return
-
 
 def verifyFolderStructure(inPath, inputFolderNames):
     output = True
@@ -65,6 +86,7 @@ def verifyFolderStructure(inPath, inputFolderNames):
             else:
                 print("Error: missing expected folder " + name + " at given path " + inPath)
                 output = False
+
             
     return output
 
@@ -127,6 +149,23 @@ def createMask(LinesFilename, MasksFilename, ColorsFilename, workingDir, outputF
     Image.alpha_composite(outputBackground, FinalMask).save(outputDir + MasksFilename + ".png")
     return
 
+def queryInput(validInputs=None, errorString=None):
+    output = ""
+    hasValidInput = False
+    while not hasValidInput:
+        inputVal = input()
+        inputVal = inputVal.capitalize()
+        if validInputs != None and not inputVal in validInputs:
+            if(errorString != None):
+                print("Invalid Input, please try again.")
+            else:
+                print(errorString)
+        else:
+            output = inputVal
+            hasValidInput = True 
+    return output
+
+
 def main():
     parser = argparse.ArgumentParser(description='|| VivSpriteTexturePacker || Texture Packer for the VivSprite art pipeline. Use this command line by typing \"python3 main.py [optional arguments]" in your current directory. By default, the texture packer will run all steps. This can take a lot of time, and will throw away all existing work. If you want to run fewer steps, then specify the steps you want to run by passing the corresponding flag.')
     parser.add_argument('-p', '--path', default="", dest='path', type=str, help="\"-p=\"C:\\path\"\" to use - Sets the working directory")
@@ -145,8 +184,21 @@ def main():
     inputFolderNames = ["outlines", "colors", "masks"]
     args = parser.parse_args()
     
-    #print("No path given, do you want to use the new folder flow? Y/N")
-    #if yes, call newFolderFlow() & return
+    path = args.path
+    if not args.path:
+        print("No path given, do you want to use the new folder flow? Y/N")
+        userInput = queryInput(["Y", "N"], "Please input either Y to confirm or N to cancel")
+        if(userInput == "Y"):
+            newFolderFlow()
+            exit()
+        print("Do you want to specify the path now? Y/N")
+        userInput = queryInput(["Y", "N"], "Please input either Y to confirm or N to cancel")
+        if(userInput == "Y"):
+            path = queryInput()
+        else:
+            print("Please specify the path when running this tool using the -p parameter.")
+            print("Quitting")
+            exit()
    
 
 
@@ -174,15 +226,15 @@ def main():
         print("\t---------------------------------------")
 
     if allStepsEnabled or args.verify:
-        if(not verifyFolderStructure(args.path, inputFolderNames)):
+        if(not verifyFolderStructure(path, inputFolderNames)):
             print("Failed to verify folder structure, aborting.")
             return
     
     if allStepsEnabled or args.packing:
-        filePathList = pack(args.path,inputFolderNames,args.padding)
+        filePathList = pack(path,inputFolderNames,args.padding)
 
-    intermediateFilePath = args.path + "\\intermediate\\"
-    outputFilePath = args.path + "\\output\\"
+    intermediateFilePath = path + "\\intermediate\\"
+    outputFilePath = path + "\\output\\"
 
     if allStepsEnabled or args.outlines:
         #add a white background to the outlines
@@ -197,7 +249,7 @@ def main():
         #make temp variant of the colors where all transparent pixels are black & all opaque pixels are white
         createNormalMapBase("masks", intermediateFilePath, outputFilename="normal_map_base")
         #generate normals using the temp variant
-        NormalMapGen.generateNormals("normal_map_base", args.path, "\\intermediate\\", "\\output\\", args.smooth, args.intensity)
+        NormalMapGen.generateNormals("normal_map_base", path, "\\intermediate\\", "\\output\\", args.smooth, args.intensity)
 
 if __name__ == '__main__':
     main()
