@@ -14,6 +14,7 @@ import NormalMapGen
 import argparse
 import os
 import shutil
+import json
 from PIL import Image
 from PIL import ImageColor
 import PIL.ImageOps   
@@ -28,7 +29,7 @@ def newFolderFlow():
     print("Where do you want to create the folders?")
     path = queryInput()
     print("What is the name of your new animation?")
-    name = queryInput()
+    animationName = queryInput()
     print("What character is this animation for?")
     subfolder = queryInput()
 
@@ -36,29 +37,29 @@ def newFolderFlow():
     scanPath = os.scandir(path=path)
     hasValidFolder = False
     for file in scanPath:
-        if file.is_dir() and file.name == name:
-            hasValidFolder
+        if file.is_dir() and file.name == animationName:
+            hasValidFolder = True
 
     if not hasValidFolder:
-        os.mkdir(path + "\\" + name)
+        os.mkdir(path + "\\" + animationName)
 
-    path = path + "/" + name
+    path = path + "/" + animationName
     scanPath = os.scandir(path=path)
 
     for file in scanPath:
         if file.is_dir():
-            for name in neededFiles:
-                if file.name == name:
-                    neededFiles.remove(name)
+            for dirName in neededFiles:
+                if file.name == dirName:
+                    neededFiles.remove(dirName)
                     break
     
     if len(neededFiles) > 0:
-        for name in neededFiles:
-            os.mkdir(path + "\\" + name)
+        for dirName in neededFiles:
+            os.mkdir(path + "\\" + dirName)
     
     #copy over a modfied version of the settings file, with the name & subfolder changed
     shutil.copy(os.getcwd() + "/resources/settings.json", path + "/output/settings.json")
-    modifySettingsFile(path + "/output/settings.json", name, subfolder)
+    modifySettingsFile(path + "/output/settings.json", animationName, subfolder)
 
     print("Folder set up complete!")
     print("Once you've populated the folders, run the command:")
@@ -68,10 +69,23 @@ def newFolderFlow():
 
 def modifySettingsFile(settingsFilePath, animationName, characterName):
     #load the file 
-    #Parse the JSON
+    file = open(settingsFilePath, "r")
+    if file == None:
+        print("Error opening settings file. Aborting.")
+        return
+    jsonBlob = json.load(file)
+    file.close()
     #overwrite "name" with animationName
+    jsonBlob["name"] = animationName
     #overwrite "subfolder" with characterName
+    jsonBlob["subfolder"] = characterName
     #save file
+    file = open(settingsFilePath, "w")
+    if file == None:
+        print("Error opening settings file. Aborting.")
+        return
+    json.dump(jsonBlob, file)
+    file.close()
     return
 
 def verifyFolderStructure(inPath, inputFolderNames):
@@ -165,8 +179,14 @@ def queryInput(validInputs=None, errorString=None):
     hasValidInput = False
     while not hasValidInput:
         inputVal = input()
-        inputVal = inputVal.capitalize()
-        if validInputs != None and not inputVal in validInputs:
+        if validInputs == None:
+            output = inputVal
+            hasValidInput = True
+            break
+        else:
+            inputVal = inputVal.capitalize()
+
+        if not inputVal in validInputs:
             if(errorString != None):
                 print("Invalid Input, please try again.")
             else:
