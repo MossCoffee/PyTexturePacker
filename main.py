@@ -27,18 +27,18 @@ def pack(targetDirectory, inputFolderNames, padding):
 
 def newFolderFlow():
     print("Where do you want to create the folders?")
-    print("Path: <FOLDER_ROOT>\\<character_name>\\<animation_name>")
+    print("Path: <FOLDER_ROOT>/<character_name>/<animation_name>")
     path = queryInput()
     print("\n")
-    print("Path: "+ path +"\\<CHARACTER_NAME>\\<animation_name>")
+    print("Path: "+ path +"/<CHARACTER_NAME>/<animation_name>")
     print("What character is this animation for?")
     subfolder = queryInput()
     print("\n")
-    print("Path: "+ path +"\\"+ subfolder +"\\<ANIMATION_NAME>")
+    print("Path: "+ path +"/"+ subfolder +"/<ANIMATION_NAME>")
     print("What is the name of your new animation?")
     animationName = queryInput()
     print("\n")
-    print("Final Path: "+ path +"\\"+ subfolder +"\\" + animationName)
+    print("Final Path: "+ path +"/"+ subfolder +"/" + animationName)
 
     neededFiles = ["colors", "outlines", "masks","output","intermediate"]
     scanPath = os.scandir(path=path)
@@ -48,7 +48,7 @@ def newFolderFlow():
             hasValidFolder = True
 
     if not hasValidFolder:
-        os.mkdir(path + "\\" + subfolder)
+        os.mkdir(path + "/" + subfolder)
 
     path = path + "/" + subfolder
 
@@ -59,7 +59,7 @@ def newFolderFlow():
             hasValidFolder = True
 
     if not hasValidFolder:
-        os.mkdir(path + "\\" + animationName)
+        os.mkdir(path + "/" + animationName)
 
     path = path + "/" + animationName
     scanPath = os.scandir(path=path)
@@ -73,7 +73,7 @@ def newFolderFlow():
     
     if len(neededFiles) > 0:
         for dirName in neededFiles:
-            os.mkdir(path + "\\" + dirName)
+            os.mkdir(path + "/" + dirName)
     
     #copy over a modfied version of the settings file, with the name & subfolder changed
     shutil.copy(os.getcwd() + "/resources/settings.json", path + "/output/settings.json")
