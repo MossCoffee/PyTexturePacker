@@ -177,7 +177,7 @@ def createMask(LinesFilename, MasksFilename, ColorsFilename, workingDir, outputF
     
     #Step 1 apply masks_png to solid blue background
     masks_png = Image.open(workingDir + MasksFilename + ".png")
-    background = Image.new(masks_png.mode, masks_png.size, (0,0,255)) #Mask shadow color go here
+    background = Image.new(masks_png.mode, masks_png.size, (0,255,0)) #Mask shadow color go here
     masksOnBackground = Image.alpha_composite(background, masks_png)
     
     colors_png = Image.open(workingDir + ColorsFilename + ".png")
@@ -226,8 +226,8 @@ def main():
     parser.add_argument('-m', '--masks', default=False, dest='masks', type=bool, help="\"-m=True\" to enable - Enables the masks processing step")
     parser.add_argument('-n', '--normals', default=False, dest='normals', type=bool, help="\"-n=True\" to enable - Enable the generation of normal map using the colors generated from output")
     #normals options
-    parser.add_argument('-s', '--smooth', default=0., type=float, help='\"-s=3\" to use - Set smooth gaussian blur applied on the image')
-    parser.add_argument('-it', '--intensity', default=1., type=float, help='\"-it=6.0\" to use - Set Intensity of the normal map')
+    parser.add_argument('-s', '--smooth', default=3., type=float, help='\"-s=3\" to use - Set smooth gaussian blur applied on the image')
+    parser.add_argument('-it', '--intensity', default=6., type=float, help='\"-it=6.0\" to use - Set Intensity of the normal map')
     #packing options 
     parser.add_argument('-pad', '--padding', default=2, dest='padding', type=int, help='\"-pad=3\" to use - Set the padding in between each texture when packing')
     inputFolderNames = ["outlines", "colors", "masks"]
