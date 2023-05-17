@@ -155,13 +155,17 @@ def fillAlphaWithColor(filename, workingDir, outputFilename=None, outputDir=None
     Image.alpha_composite(background, foreground).save(outputDir + outputFilename + ".png")
     return
 
-def createNormalMapBase(filename, workingDir, outputFilename=None, outputDir=None):
-    if outputFilename is None:
-        outputFilename = filename
+def createNormalMapBase(*filenames, workingDir, outputFilename=None, outputDir=None):
     if outputDir is None:
         outputDir = workingDir
+    foreground = None
+    for file in filenames:
+        current_image = Image.open(workingDir + file + ".png")
+        if foreground == None:
+            foreground = current_image
+        else:
+            foreground = Image.alpha_composite(current_image, foreground)
     
-    foreground = Image.open(workingDir + filename + ".png")
     background = Image.new(foreground.mode, foreground.size, "white")
 
     maskedImage = Image.composite(background, foreground, foreground)
@@ -177,7 +181,7 @@ def createMask(LinesFilename, MasksFilename, ColorsFilename, workingDir, outputF
     
     #Step 1 apply masks_png to solid blue background
     masks_png = Image.open(workingDir + MasksFilename + ".png")
-    background = Image.new(masks_png.mode, masks_png.size, (0,255,0)) #Mask shadow color go here
+    background = Image.new(masks_png.mode, masks_png.size, (0,0,255)) #Mask shadow color go here
     masksOnBackground = Image.alpha_composite(background, masks_png)
     
     colors_png = Image.open(workingDir + ColorsFilename + ".png")
@@ -296,7 +300,7 @@ def main():
         createMask("outlines","masks", "colors", intermediateFilePath, outputDir=outputFilePath)
     if allStepsEnabled or args.normals:
         #make temp variant of the colors where all transparent pixels are black & all opaque pixels are white
-        createNormalMapBase("masks", intermediateFilePath, outputFilename="normal_map_base")
+        createNormalMapBase("colors", "masks", "outlines", workingDir=intermediateFilePath, outputFilename="normal_map_base")
         #generate normals using the temp variant
         NormalMapGen.generateNormals("normal_map_base", path, "\\intermediate\\", "\\output\\", args.smooth, args.intensity)
 
