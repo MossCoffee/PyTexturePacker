@@ -27,17 +27,35 @@ def pack(targetDirectory, inputFolderNames, padding):
 
 def newFolderFlow():
     print("Where do you want to create the folders?")
+    print("Path: <FOLDER_ROOT>\\<character_name>\\<animation_name>")
     path = queryInput()
-    print("What is the name of your new animation?")
-    animationName = queryInput()
+    print("\n")
+    print("Path: "+ path +"\\<CHARACTER_NAME>\\<animation_name>")
     print("What character is this animation for?")
     subfolder = queryInput()
+    print("\n")
+    print("Path: "+ path +"\\"+ subfolder +"\\<ANIMATION_NAME>")
+    print("What is the name of your new animation?")
+    animationName = queryInput()
+    print("\n")
+    print("Final Path: "+ path +"\\"+ subfolder +"\\" + animationName)
 
     neededFiles = ["colors", "outlines", "masks","output","intermediate"]
     scanPath = os.scandir(path=path)
     hasValidFolder = False
     for file in scanPath:
-        if file.is_dir() and file.name == animationName:
+        if file.is_dir() and file.name == subfolder:
+            hasValidFolder = True
+
+    if not hasValidFolder:
+        os.mkdir(path + "\\" + subfolder)
+
+    path = path + "/" + subfolder
+
+    scanPath = os.scandir(path=path)
+    hasValidFolder = False
+    for file in scanPath:
+        if file.is_dir() and file.name == subfolder:
             hasValidFolder = True
 
     if not hasValidFolder:
