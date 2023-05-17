@@ -76,8 +76,8 @@ def newFolderFlow():
             os.mkdir(path + "/" + dirName)
     
     #copy over a modfied version of the settings file, with the name & subfolder changed
-    shutil.copy(os.getcwd() + "/resources/settings.json", path + "/output/settings.json")
-    modifySettingsFile(path + "/output/settings.json", animationName, subfolder)
+    shutil.copy(os.getcwd() + "/resources/import.json", path + "/output/import.json")
+    modifySettingsFile(path + "/output/import.json", animationName, subfolder)
 
     print("Folder set up complete!")
     print("Once you've populated the folders, run the command:")
@@ -89,7 +89,7 @@ def modifySettingsFile(settingsFilePath, animationName, characterName):
     #load the file 
     file = open(settingsFilePath, "r")
     if file == None:
-        print("Error opening settings file. Aborting.")
+        print("Error opening import file. Aborting.")
         return
     jsonBlob = json.load(file)
     file.close()
@@ -100,7 +100,7 @@ def modifySettingsFile(settingsFilePath, animationName, characterName):
     #save file
     file = open(settingsFilePath, "w")
     if file == None:
-        print("Error opening settings file. Aborting.")
+        print("Error opening import file. Aborting.")
         return
     json.dump(jsonBlob, file)
     file.close()
