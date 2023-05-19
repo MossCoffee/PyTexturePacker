@@ -1,9 +1,9 @@
 {
 "animationName":"placeholder",
 "characterName":"placeholder",
-"paper2dsprite":"outlines.paper2dsprites",
+"paper2dsprite":"lines.paper2dsprites",
 "images": [
-{"name":"outlines",
+{"name":"lines",
 "settings":{
 	"CompressionNoAlpha":true,
 	"TextureGroup":"Character",

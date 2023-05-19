@@ -54,7 +54,7 @@ def regenerateImportFile():
 def newFolderFlow():
     path, characterName, animationName = newFolderInput()
 
-    neededFiles = ["colors", "outlines", "masks","output","intermediate"]
+    neededFiles = ["colors", "lines", "masks","output","intermediate"]
     scanPath = os.scandir(path=path)
     hasValidFolder = False
     for file in scanPath:
@@ -239,7 +239,7 @@ def main():
     #Toggle steps options
     parser.add_argument('-v', '--verify', default=False, dest='verify', type=bool, help="\"-v=True\" to enable - Enables the verify packing step")
     parser.add_argument('-pk', '--packing', default=False, dest='packing', type=bool, help="\"-pk=True\" to enable - Enables the texture packing step")
-    parser.add_argument('-o', '--outlines', default=False, dest='outlines', type=bool, help="\"-o=True\" to enable - Enables the outlines processing step")
+    parser.add_argument('-l', '--lines', default=False, dest='lines', type=bool, help="\"-o=True\" to enable - Enables the lines processing step")
     parser.add_argument('-c', '--colors', default=False, dest='colors', type=bool, help="\"-c=True\" to enable - Enables the colors processing step")
     parser.add_argument('-m', '--masks', default=False, dest='masks', type=bool, help="\"-m=True\" to enable - Enables the masks processing step")
     parser.add_argument('-n', '--normals', default=False, dest='normals', type=bool, help="\"-n=True\" to enable - Enable the generation of normal map using the colors generated from output")
@@ -248,7 +248,7 @@ def main():
     parser.add_argument('-it', '--intensity', default=6., type=float, help='\"-it=6.0\" to use - Set Intensity of the normal map')
     #packing options 
     parser.add_argument('-pad', '--padding', default=2, dest='padding', type=int, help='\"-pad=3\" to use - Set the padding in between each texture when packing')
-    inputFolderNames = ["outlines", "colors", "masks"]
+    inputFolderNames = ["lines", "colors", "masks"]
     args = parser.parse_args()
     
     path = args.path
@@ -274,14 +274,14 @@ def main():
    
 
 
-    allStepsEnabled = not (args.verify or args.packing or args.outlines or args.colors or args.masks or args.normals)
+    allStepsEnabled = not (args.verify or args.packing or args.lines or args.colors or args.masks or args.normals)
     if not allStepsEnabled:
         flagsEnabled = ""
         if args.verify:
             flagsEnabled += "-v=True "
         if args.packing:
             flagsEnabled += "-pk=True "
-        if args.outlines:
+        if args.lines:
             flagsEnabled += "-o=True "
         if args.colors:
             flagsEnabled += "-c=True "
@@ -308,18 +308,18 @@ def main():
     intermediateFilePath = path + "\\intermediate\\"
     outputFilePath = path + "\\output\\"
 
-    if allStepsEnabled or args.outlines:
-        #add a white background to the outlines
-        fillAlphaWithColor("outlines", intermediateFilePath, outputFilename="outlines_background", color="white")
+    if allStepsEnabled or args.lines:
+        #add a white background to the lines
+        fillAlphaWithColor("lines", intermediateFilePath, outputFilename="lines_background", color="white")
         #invert the image
-        invertImage("outlines_background", intermediateFilePath, outputFilename="outlines", outputDir=outputFilePath)
+        invertImage("lines_background", intermediateFilePath, outputFilename="lines", outputDir=outputFilePath)
     if allStepsEnabled or args.colors:
         fillAlphaWithColor("colors", intermediateFilePath, outputDir=outputFilePath)
     if allStepsEnabled or args.masks:
-        createMask("outlines","masks", "colors", intermediateFilePath, outputDir=outputFilePath)
+        createMask("lines","masks", "colors", intermediateFilePath, outputDir=outputFilePath)
     if allStepsEnabled or args.normals:
         #make temp variant of the colors where all transparent pixels are black & all opaque pixels are white
-        createNormalMapBase("colors", "masks", "outlines", workingDir=intermediateFilePath, outputFilename="normal_map_base")
+        createNormalMapBase("colors", "masks", "lines", workingDir=intermediateFilePath, outputFilename="normal_map_base")
         #generate normals using the temp variant
         NormalMapGen.generateNormals("normal_map_base", path, "\\intermediate\\", "\\output\\", args.smooth, args.intensity)
 
