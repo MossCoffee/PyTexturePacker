@@ -25,20 +25,34 @@ def pack(targetDirectory, inputFolderNames, padding):
     packer = Packer.create(max_width=4096, max_height=4096,trim_mode=1,inner_padding=padding,enable_rotated=False)
     return packer.packWithMatchingUVs(inputFolderNames, "intermediate", "output", targetDirectory)
 
-def newFolderFlow():
-    print("Where do you want to create the folders?")
+def newFolderInput():
+    print("Where is your root folder?")
     print("Path: >> <FOLDER_ROOT> << /<character_name>/<animation_name>")
     path = queryInput()
     print("\n")
     print("Path: "+ path +"/ >> <CHARACTER_NAME> << /<animation_name>")
-    print("What character is this animation for?")
+    print("What character is this for?")
     subfolder = queryInput()
     print("\n")
     print("Path: "+ path +"/"+ subfolder +"/ >> <ANIMATION_NAME> <<")
-    print("What is the name of your new animation?")
+    print("What is the name of your animation?")
     animationName = queryInput()
     print("\n")
     print("~~ Final Path: "+ path +"/"+ subfolder +"/" + animationName + " ~~")
+    return path, subfolder, animationName
+
+def copyImportFile(path, subfolder, animationName):
+    #copy over a modfied version of the settings file, with the name & subfolder changed
+    shutil.copy(os.getcwd() + "/resources/import.json", path + "/output/import.json")
+    modifySettingsFile(path + "/output/import.json", animationName, subfolder + "/" + animationName)
+    print("Successfully Regenerated Import File")
+
+def regenerateImportFile():
+    path, subfolder, animationName = newFolderInput()
+    copyImportFile(path + "/" + subfolder + "/" + animationName, subfolder, animationName)
+
+def newFolderFlow():
+    path, subfolder, animationName = newFolderInput()
 
     neededFiles = ["colors", "outlines", "masks","output","intermediate"]
     scanPath = os.scandir(path=path)
@@ -75,9 +89,7 @@ def newFolderFlow():
         for dirName in neededFiles:
             os.mkdir(path + "/" + dirName)
     
-    #copy over a modfied version of the settings file, with the name & subfolder changed
-    shutil.copy(os.getcwd() + "/resources/import.json", path + "/output/import.json")
-    modifySettingsFile(path + "/output/import.json", animationName, subfolder)
+    copyImportFile(path, subfolder, animationName)
 
     print("Folder set up complete!")
     print("Once you've populated the folders, run the command:")
@@ -243,6 +255,11 @@ def main():
         userInput = queryInput(["Y", "N"], "Please input either Y to confirm or N to cancel")
         if(userInput == "Y"):
             newFolderFlow()
+            exit()
+        print("Do you want to regenerate an Import.json file? Y/N")
+        userInput = queryInput(["Y", "N"], "Please input either Y to confirm or N to cancel")
+        if(userInput == "Y"):
+            regenerateImportFile()
             exit()
         print("Do you want to specify the path now? Y/N")
         userInput = queryInput(["Y", "N"], "Please input either Y to confirm or N to cancel")
