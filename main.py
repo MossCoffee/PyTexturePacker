@@ -32,44 +32,44 @@ def newFolderInput():
     print("\n")
     print("Path: "+ path +"/ >> <CHARACTER_NAME> << /<animation_name>")
     print("What character is this for?")
-    subfolder = queryInput()
+    characterName = queryInput()
     print("\n")
-    print("Path: "+ path +"/"+ subfolder +"/ >> <ANIMATION_NAME> <<")
+    print("Path: "+ path +"/"+ characterName +"/ >> <ANIMATION_NAME> <<")
     print("What is the name of your animation?")
     animationName = queryInput()
     print("\n")
-    print("~~ Final Path: "+ path +"/"+ subfolder +"/" + animationName + " ~~")
-    return path, subfolder, animationName
+    print("~~ Final Path: "+ path +"/"+ characterName +"/" + animationName + " ~~")
+    return path, characterName, animationName
 
-def copyImportFile(path, subfolder, animationName):
-    #copy over a modfied version of the settings file, with the name & subfolder changed
+def copyImportFile(path, characterName, animationName):
+    #copy over a modfied version of the settings file, with the name & characterName changed
     shutil.copy(os.getcwd() + "/resources/import.json", path + "/output/import.json")
-    modifySettingsFile(path + "/output/import.json", animationName, subfolder + "/" + animationName)
+    modifySettingsFile(path + "/output/import.json", animationName, characterName)
     print("Successfully Regenerated Import File")
 
 def regenerateImportFile():
-    path, subfolder, animationName = newFolderInput()
-    copyImportFile(path + "/" + subfolder + "/" + animationName, subfolder, animationName)
+    path, characterName, animationName = newFolderInput()
+    copyImportFile(path + "/" + characterName + "/" + animationName, characterName, animationName)
 
 def newFolderFlow():
-    path, subfolder, animationName = newFolderInput()
+    path, characterName, animationName = newFolderInput()
 
     neededFiles = ["colors", "outlines", "masks","output","intermediate"]
     scanPath = os.scandir(path=path)
     hasValidFolder = False
     for file in scanPath:
-        if file.is_dir() and file.name == subfolder:
+        if file.is_dir() and file.name == characterName:
             hasValidFolder = True
 
     if not hasValidFolder:
-        os.mkdir(path + "/" + subfolder)
+        os.mkdir(path + "/" + characterName)
 
-    path = path + "/" + subfolder
+    path = path + "/" + characterName
 
     scanPath = os.scandir(path=path)
     hasValidFolder = False
     for file in scanPath:
-        if file.is_dir() and file.name == subfolder:
+        if file.is_dir() and file.name == characterName:
             hasValidFolder = True
 
     if not hasValidFolder:
@@ -89,7 +89,7 @@ def newFolderFlow():
         for dirName in neededFiles:
             os.mkdir(path + "/" + dirName)
     
-    copyImportFile(path, subfolder, animationName)
+    copyImportFile(path, characterName, animationName)
 
     print("Folder set up complete!")
     print("Once you've populated the folders, run the command:")
@@ -106,9 +106,11 @@ def modifySettingsFile(settingsFilePath, animationName, characterName):
     jsonBlob = json.load(file)
     file.close()
     #overwrite "name" with animationName
-    jsonBlob["name"] = animationName
-    #overwrite "subfolder" with characterName
-    jsonBlob["subfolder"] = characterName
+    #jsonBlob["name"] = animationName
+    jsonBlob["animationName"] = animationName
+    #overwrite "characterName" with characterName
+    #jsonBlob["characterName"] = characterName
+    jsonBlob["characterName"] = characterName
     #save file
     file = open(settingsFilePath, "w")
     if file == None:
