@@ -3,7 +3,7 @@
 "characterName":"placeholder",
 "paper2dsprite":"outlines.paper2dsprites",
 "images": [
-{"name":"lines",
+{"name":"outlines",
 "settings":{
 	"CompressionNoAlpha":true,
 	"TextureGroup":"Character",
