@@ -17,9 +17,14 @@ import shutil
 import json
 from PIL import Image
 from PIL import ImageColor
-import PIL.ImageOps   
+import PIL.ImageOps
+from enum import Enum
 
-
+class Mode(Enum):
+    CLASSIC=0
+    SKETCH_ONLY=1
+    SKETCH_AND_FINAL=2
+    MISMATCH=3
 
 def pack(targetDirectory, inputFolderNames, padding):
     packer = Packer.create(max_width=4096, max_height=4096,trim_mode=1,inner_padding=padding,enable_rotated=False)
@@ -41,6 +46,62 @@ def newFolderInput():
     print("~~ Final Path: "+ path +"/"+ characterName +"/" + animationName + " ~~")
     return path, characterName, animationName
 
+def validatePicturesInFolders(path):
+    mode = Mode.MISMATCH 
+    sketchAssets = ["sketches"]
+    sketchAssetCount = 0
+    finalArtAssets = ["colors", "lines", "masks"]
+    finalArtAssetCount = 0
+    
+    scanPath = os.scandir(path=path)
+
+    for folder_name in sketchAssets:
+        hasValidFolders = False
+        for file in scanPath:
+            if file.is_dir() and file.name == folder_name:
+                hasValidFolders = True
+
+        if not hasValidFolders:
+            #This is likely a legacy folder structure, return 0
+            break
+
+        folderPath = path + "/" + folder_name
+        scanPath = os.scandir(path=folderPath)
+        currentFolderAssetCount = 0
+        
+        for file in scanPath:
+            if file.is_file():
+                currentFolderAssetCount += 1
+        if(sketchAssetCount != currentFolderAssetCount and sketchAssetCount != 0):
+            print("Error in validating sketch assests, you have a uneven amount of them! You shouldn't be hitting this. Aborting.")
+            return mode
+        else:
+            sketchAssetCount = currentFolderAssetCount
+
+    for folder_name in finalArtAssets:
+        folderPath = path + "/" + folder_name
+        scanPath = os.scandir(path=folderPath)
+        currentFolderAssetCount = 0
+        for file in scanPath:
+            if file.is_file():
+                currentFolderAssetCount += 1
+        if(finalArtAssetCount != currentFolderAssetCount and finalArtAssetCount != 0):
+            print("Error in validating final assests, you have different amounts of assets in each folder! Aborting.")
+            return
+        else:
+            finalArtAssetCount = currentFolderAssetCount
+    
+    if sketchAssetCount > 0 and finalArtAssetCount > 0 and sketchAssetCount == finalArtAssetCount:
+        mode = Mode.SKETCH_AND_FINAL
+    elif sketchAssetCount > 0 and finalArtAssetCount == 0:
+        mode = Mode.SKETCH_ONLY
+    elif sketchAssetCount == 0 and finalArtAssetCount > 0:
+        mode = Mode.CLASSIC
+    else: 
+        mode = Mode.MISMATCH
+    
+    return mode
+
 def copyImportFile(path, characterName, animationName):
     #copy over a modfied version of the settings file, with the name & characterName changed
     shutil.copy(os.getcwd() + "/resources/import.json", path + "/output/import.json")
@@ -54,7 +115,7 @@ def regenerateImportFile():
 def newFolderFlow():
     path, characterName, animationName = newFolderInput()
 
-    neededFiles = ["colors", "lines", "masks","output","intermediate"]
+    neededFiles = ["sketches", "colors", "lines", "masks","output","intermediate"]
     scanPath = os.scandir(path=path)
     hasValidFolder = False
     for file in scanPath:
@@ -300,6 +361,10 @@ def main():
     if allStepsEnabled or args.verify:
         if(not verifyFolderStructure(path, inputFolderNames)):
             print("Failed to verify folder structure, aborting.")
+            return
+        processingMode = validatePicturesInFolders(path=path)
+        if(processingMode == Mode.MISMATCH):
+            print("Expected number of images in lines, masks and colors to be equal. sketches should be equal or 0. Aborting.")
             return
     
     if allStepsEnabled or args.packing:
