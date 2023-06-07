@@ -26,9 +26,9 @@ class Mode(Enum):
     SKETCH_AND_FINAL=2
     MISMATCH=3
 
-def pack(targetDirectory, inputFolderNames, padding):
+def pack(targetDirectory, inputFolderNames, padding, input_dir_index_for_filename=0):
     packer = Packer.create(max_width=4096, max_height=4096,trim_mode=1,inner_padding=padding,enable_rotated=False)
-    return packer.packWithMatchingUVs(inputFolderNames, "intermediate", "output", targetDirectory)
+    return packer.packWithMatchingUVs(inputFolderNames, "intermediate", "output", targetDirectory, input_dir_index_for_filename=input_dir_index_for_filename)
 
 def newFolderInput():
     print("Where is your root folder?")
@@ -293,17 +293,63 @@ def queryInput(validInputs=None, errorString=None):
             hasValidInput = True 
     return output
 
+def ClassicPackingMode(path,inputFolderNames,args, input_dir_index_for_filename=0):
+    #Packing
+    filePathList = pack(path,inputFolderNames,args.padding, input_dir_index_for_filename)
+
+    intermediateFilePath = path + "\\intermediate\\"
+    outputFilePath = path + "\\output\\"
+
+    #Lines
+    #add a white background to the lines
+    fillAlphaWithColor("lines", intermediateFilePath, outputFilename="lines_background", color="white")
+    #invert the image
+    invertImage("lines_background", intermediateFilePath, outputFilename="lines", outputDir=outputFilePath)
+    #Colors
+    fillAlphaWithColor("colors", intermediateFilePath, outputDir=outputFilePath)
+    #Masks
+    createMask("lines","masks", "colors", intermediateFilePath, outputDir=outputFilePath)
+    #Normals
+    #make temp variant of the colors where all transparent pixels are black & all opaque pixels are white
+    createNormalMapBase("colors", "masks", "lines", workingDir=intermediateFilePath, outputFilename="normal_map_base")
+    #generate normals using the temp variant
+    NormalMapGen.generateNormals("normal_map_base", path, "\\intermediate\\", "\\output\\", args.smooth, args.intensity)
+    return
+
+def SketchesOnlyPackingMode(path, inputFolderNames, args):
+        #Packing
+    filePathList = pack(path,inputFolderNames,args.padding, 1)
+
+    intermediateFilePath = path + "\\intermediate\\"
+    outputFilePath = path + "\\output\\"
+
+    #Lines
+    #add a white background to the lines
+    fillAlphaWithColor("sketches", intermediateFilePath, outputFilename="lines_background", color="white")
+    #invert the image
+    invertImage("lines_background", intermediateFilePath, outputFilename="lines", outputDir=outputFilePath)
+    #Colors
+    fillAlphaWithColor("sketches", intermediateFilePath, outputFilename="colors" ,outputDir=outputFilePath)
+    #Masks
+    createMask("sketches","sketches", "sketches", intermediateFilePath, outputDir=outputFilePath)
+    #Normals
+    #make temp variant of the colors where all transparent pixels are black & all opaque pixels are white
+    createNormalMapBase("sketches", "sketches", "sketches", workingDir=intermediateFilePath, outputFilename="normal_map_base")
+    #generate normals using the temp variant
+    NormalMapGen.generateNormals("normal_map_base", path, "\\intermediate\\", "\\output\\", args.smooth, args.intensity)
+    return
+
 
 def main():
     parser = argparse.ArgumentParser(description='|| VivSpriteTexturePacker || Texture Packer for the VivSprite art pipeline. Use this command line by typing \"python3 main.py [optional arguments]" in your current directory. By default, the texture packer will run all steps. This can take a lot of time, and will throw away all existing work. If you want to run fewer steps, then specify the steps you want to run by passing the corresponding flag.')
     parser.add_argument('-p', '--path', default="", dest='path', type=str, help="\"-p=\"C:\\path\"\" to use - Sets the working directory")
     #Toggle steps options
-    parser.add_argument('-v', '--verify', default=False, dest='verify', type=bool, help="\"-v=True\" to enable - Enables the verify packing step")
-    parser.add_argument('-pk', '--packing', default=False, dest='packing', type=bool, help="\"-pk=True\" to enable - Enables the texture packing step")
-    parser.add_argument('-l', '--lines', default=False, dest='lines', type=bool, help="\"-o=True\" to enable - Enables the lines processing step")
-    parser.add_argument('-c', '--colors', default=False, dest='colors', type=bool, help="\"-c=True\" to enable - Enables the colors processing step")
-    parser.add_argument('-m', '--masks', default=False, dest='masks', type=bool, help="\"-m=True\" to enable - Enables the masks processing step")
-    parser.add_argument('-n', '--normals', default=False, dest='normals', type=bool, help="\"-n=True\" to enable - Enable the generation of normal map using the colors generated from output")
+    #parser.add_argument('-v', '--verify', default=False, dest='verify', type=bool, help="\"-v=True\" to enable - Enables the verify packing step")
+    #parser.add_argument('-pk', '--packing', default=False, dest='packing', type=bool, help="\"-pk=True\" to enable - Enables the texture packing step")
+    #parser.add_argument('-l', '--lines', default=False, dest='lines', type=bool, help="\"-o=True\" to enable - Enables the lines processing step")
+    #parser.add_argument('-c', '--colors', default=False, dest='colors', type=bool, help="\"-c=True\" to enable - Enables the colors processing step")
+    #parser.add_argument('-m', '--masks', default=False, dest='masks', type=bool, help="\"-m=True\" to enable - Enables the masks processing step")
+    #parser.add_argument('-n', '--normals', default=False, dest='normals', type=bool, help="\"-n=True\" to enable - Enable the generation of normal map using the colors generated from output")
     #normals options
     parser.add_argument('-s', '--smooth', default=3., type=float, help='\"-s=3\" to use - Set smooth gaussian blur applied on the image')
     parser.add_argument('-it', '--intensity', default=6., type=float, help='\"-it=6.0\" to use - Set Intensity of the normal map')
@@ -332,61 +378,31 @@ def main():
             print("Please specify the path when running this tool using the -p parameter.")
             print("Quitting")
             exit()
-   
 
-
-    allStepsEnabled = not (args.verify or args.packing or args.lines or args.colors or args.masks or args.normals)
-    if not allStepsEnabled:
-        flagsEnabled = ""
-        if args.verify:
-            flagsEnabled += "-v=True "
-        if args.packing:
-            flagsEnabled += "-pk=True "
-        if args.lines:
-            flagsEnabled += "-o=True "
-        if args.colors:
-            flagsEnabled += "-c=True "
-        if args.masks:
-            flagsEnabled += "-m=True "
-        if args.normals:
-            flagsEnabled += "-n=True "
-
-
-        print("\t------ SINGLE STEP MODE ENABLED -------")
-        print("\tYou've passed a flag to this script to run specific steps of the texture packer.")
-        print("\tRemove "+ flagsEnabled + "from your command line to leave this mode.")
-        print("\tFor more details use the \'-h\' flag for help")
-        print("\t---------------------------------------")
-
-    if allStepsEnabled or args.verify:
-        if(not verifyFolderStructure(path, inputFolderNames)):
-            print("Failed to verify folder structure, aborting.")
-            return
-        processingMode = validatePicturesInFolders(path=path)
-        if(processingMode == Mode.MISMATCH):
-            print("Expected number of images in lines, masks and colors to be equal. sketches should be equal or 0. Aborting.")
-            return
+    if(not verifyFolderStructure(path, inputFolderNames)):
+        print("Failed to verify folder structure, aborting.")
+        return
+    processingMode = validatePicturesInFolders(path=path)
+    if(processingMode == Mode.MISMATCH):
+        print("Expected number of images in lines, masks and colors to be equal. sketches should be equal or 0. Aborting.")
+        return
     
-    if allStepsEnabled or args.packing:
-        filePathList = pack(path,inputFolderNames,args.padding)
-
-    intermediateFilePath = path + "\\intermediate\\"
-    outputFilePath = path + "\\output\\"
-
-    if allStepsEnabled or args.lines:
-        #add a white background to the lines
-        fillAlphaWithColor("lines", intermediateFilePath, outputFilename="lines_background", color="white")
-        #invert the image
-        invertImage("lines_background", intermediateFilePath, outputFilename="lines", outputDir=outputFilePath)
-    if allStepsEnabled or args.colors:
-        fillAlphaWithColor("colors", intermediateFilePath, outputDir=outputFilePath)
-    if allStepsEnabled or args.masks:
-        createMask("lines","masks", "colors", intermediateFilePath, outputDir=outputFilePath)
-    if allStepsEnabled or args.normals:
-        #make temp variant of the colors where all transparent pixels are black & all opaque pixels are white
-        createNormalMapBase("colors", "masks", "lines", workingDir=intermediateFilePath, outputFilename="normal_map_base")
-        #generate normals using the temp variant
-        NormalMapGen.generateNormals("normal_map_base", path, "\\intermediate\\", "\\output\\", args.smooth, args.intensity)
+    if processingMode == Mode.SKETCH_ONLY:
+        print("Running packer in Sketch only mode...")
+        inputFolderNames.insert(0, "sketches")
+        SketchesOnlyPackingMode(path=path, inputFolderNames=inputFolderNames, args=args)
+        return
+    elif processingMode == Mode.SKETCH_AND_FINAL:
+        print("Running packer in Sketch and Final Art mode...")
+        inputFolderNames.insert(0, "sketches")
+        ClassicPackingMode(path=path, inputFolderNames=inputFolderNames, args=args, input_dir_index_for_filename=1)
+        return
+    elif processingMode == Mode.CLASSIC:
+        print("Running packer in Final Art mode...")
+        ClassicPackingMode(path=path, inputFolderNames=inputFolderNames, args=args)
+        return
+    else:
+        assert(False)
 
 if __name__ == '__main__':
     main()

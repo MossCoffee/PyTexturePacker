@@ -174,33 +174,39 @@ class PackerInterface(object):
             Utils.save_image(packed_image, os.path.join(image_dir, "%s%s" % (texture_file_name, self.texture_format)))  #save texture atlas
         return filenames
 
-        
-    def packWithMatchingUVs(self, input_dir_list, image_output_path, json_output_path, input_base_path):
+    #the labels on this function are so bad, I regret everything
+    def packWithMatchingUVs(self, input_dir_list, image_output_path, json_output_path, input_base_path, input_dir_index_for_filename=0):
         import collections
         assert len(input_dir_list) >= 2, "packWithMatchingUVs requires at least two directories"
 
-        create_json = True
         #A dictionary of filenames to Bounding boxes 
         #This should probably be indexes
         UVs = dict()
         outputFilenames = list()
-        iter = 0
+        directory_list_index = 0
+        #For each folder
         for dir in input_dir_list:
+            #loading the images
             image_rects = Utils.load_images_from_dir(input_base_path + "\\" + dir)
-            iter = 0
+            current_directory_image_index = 0
             for image_rect in image_rects:
-                bbox = image_rect.trimMatchBoundingBox(UVs.get(iter), 1)
+                #This is where the bull shit happens
+                #We get the bounding box that was placed in UVs
+                #If there is none (ie, this is the first set of images) then we actually run trim 
+                #if there is one at that index, then we've run this before!
+                
+                bbox = image_rect.trimMatchBoundingBox(UVs.get(current_directory_image_index), 1)
                 if bbox:
-                    UVs[iter] = bbox
-                iter += 1
+                    UVs[current_directory_image_index] = bbox
+                current_directory_image_index += 1
 
+            #actually pack it
             atlas_list = self._pack(image_rects)
             output_name = dir
 
-            outputFilenames = self.export_atlas(atlas_list, output_name, input_base_path + "\\" + image_output_path, input_base_path + "\\" + json_output_path, input_base_path, create_json)
+            outputFilenames = self.export_atlas(atlas_list, output_name, input_base_path + "\\" + image_output_path, input_base_path + "\\" + json_output_path, input_base_path, input_dir_index_for_filename == directory_list_index)
 
-            create_json = False
-            iter += 1
+            directory_list_index += 1
         return outputFilenames
 
     def pack(self, input_images, output_name, output_path="", input_base_path=None):
