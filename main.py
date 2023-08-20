@@ -353,7 +353,7 @@ def SketchesOnlyPackingMode(path, inputFolderNames, args):
     #Make a solid image with RGBA color (129,129,255,255)
     #make temp variant of the colors where all transparent pixels are black & all opaque pixels are white
     #createNormalMapBase("sketches", "sketches", "sketches", workingDir=intermediateFilePath, outputFilename="normal_map_base")
-    CreateSolidImageColorUsingBase("sketches", intermediateFilePath, outputFilename="normal_map_base" ,outputDir=outputFilePath,color=(129,129,255))
+    CreateSolidImageColorUsingBase("sketches", intermediateFilePath, outputFilename="normals" ,outputDir=outputFilePath,color=(129,129,255))
     #generate normals using the temp variant
     #NormalMapGen.generateNormals("normal_map_base", path, "\\intermediate\\", "\\output\\", args.smooth, args.intensity)
     return
