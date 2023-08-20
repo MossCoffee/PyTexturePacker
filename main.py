@@ -230,6 +230,18 @@ def fillAlphaWithColor(filename, workingDir, outputFilename=None, outputDir=None
     Image.alpha_composite(background, foreground).save(outputDir + outputFilename + ".png")
     return
 
+def CreateSolidImageColorUsingBase(filename, workingDir, outputFilename=None, outputDir=None, color="black"):
+    if outputFilename is None:
+        outputFilename = filename
+    if outputDir is None:
+        outputDir = workingDir
+    background = Image.open(workingDir + filename + ".png")
+    foreground = Image.new(background.mode, background.size, color) #color defaults to black
+
+    Image.alpha_composite(background, foreground).save(outputDir + outputFilename + ".png")
+    return
+
+
 def createNormalMapBase(*filenames, workingDir, outputFilename=None, outputDir=None):
     if outputDir is None:
         outputDir = workingDir
@@ -320,6 +332,7 @@ def SketchesOnlyPackingMode(path, inputFolderNames, args):
         #Packing
     filePathList = pack(path,inputFolderNames,args.padding, 1)
 
+    sketchesFilePath = path + "\\sketches\\"
     intermediateFilePath = path + "\\intermediate\\"
     outputFilePath = path + "\\output\\"
 
@@ -329,14 +342,20 @@ def SketchesOnlyPackingMode(path, inputFolderNames, args):
     #invert the image
     invertImage("lines_background", intermediateFilePath, outputFilename="lines", outputDir=outputFilePath)
     #Colors
-    fillAlphaWithColor("sketches", intermediateFilePath, outputFilename="colors" ,outputDir=outputFilePath)
+
+    #Create an RGB image with an all white background
+    CreateSolidImageColorUsingBase("sketches", intermediateFilePath, outputFilename="colors" ,outputDir=outputFilePath,color="white")
     #Masks
-    createMask("sketches","sketches", "sketches", intermediateFilePath, outputDir=outputFilePath)
+    #Create an All Blue RGB Image 
+    CreateSolidImageColorUsingBase("sketches", intermediateFilePath, outputFilename="masks" ,outputDir=outputFilePath,color="blue")
+    #createMask("sketches","sketches", "sketches", intermediateFilePath, outputDir=outputFilePath)
     #Normals
+    #Make a solid image with RGBA color (129,129,255,255)
     #make temp variant of the colors where all transparent pixels are black & all opaque pixels are white
-    createNormalMapBase("sketches", "sketches", "sketches", workingDir=intermediateFilePath, outputFilename="normal_map_base")
+    #createNormalMapBase("sketches", "sketches", "sketches", workingDir=intermediateFilePath, outputFilename="normal_map_base")
+    CreateSolidImageColorUsingBase("sketches", intermediateFilePath, outputFilename="normal_map_base" ,outputDir=outputFilePath,color=(129,129,255))
     #generate normals using the temp variant
-    NormalMapGen.generateNormals("normal_map_base", path, "\\intermediate\\", "\\output\\", args.smooth, args.intensity)
+    #NormalMapGen.generateNormals("normal_map_base", path, "\\intermediate\\", "\\output\\", args.smooth, args.intensity)
     return
 
 
