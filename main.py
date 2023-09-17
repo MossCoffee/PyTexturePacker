@@ -26,9 +26,9 @@ class Mode(Enum):
     SKETCH_AND_FINAL=2
     MISMATCH=3
 
-def pack(targetDirectory, inputFolderNames, padding, input_dir_index_for_filename=0):
+def pack(targetDirectory, inputFolderNames, padding,):
     packer = Packer.create(max_width=4096, max_height=4096,trim_mode=1,inner_padding=padding,enable_rotated=False)
-    return packer.packWithMatchingUVs(inputFolderNames, "intermediate", "output", targetDirectory, input_dir_index_for_filename=input_dir_index_for_filename)
+    return packer.packWithMatchingUVs(inputFolderNames, "intermediate", "output", targetDirectory)
 
 def newFolderInput():
     print("Where is your root folder?")
@@ -305,9 +305,9 @@ def queryInput(validInputs=None, errorString=None):
             hasValidInput = True 
     return output
 
-def ClassicPackingMode(path,inputFolderNames,args, input_dir_index_for_filename=0):
+def ClassicPackingMode(path,inputFolderNames,args):
     #Packing
-    filePathList = pack(path,inputFolderNames,args.padding, input_dir_index_for_filename)
+    filePathList = pack(path,inputFolderNames,args.padding)
 
     intermediateFilePath = path + "\\intermediate\\"
     outputFilePath = path + "\\output\\"
@@ -329,8 +329,8 @@ def ClassicPackingMode(path,inputFolderNames,args, input_dir_index_for_filename=
     return
 
 def SketchesOnlyPackingMode(path, inputFolderNames, args):
-        #Packing
-    filePathList = pack(path,inputFolderNames,args.padding, 1)
+    #Packing
+    filePathList = pack(path,inputFolderNames,args.padding)
 
     sketchesFilePath = path + "\\sketches\\"
     intermediateFilePath = path + "\\intermediate\\"
@@ -414,7 +414,7 @@ def main():
     elif processingMode == Mode.SKETCH_AND_FINAL:
         print("Running packer in Sketch and Final Art mode...")
         inputFolderNames.insert(0, "sketches")
-        ClassicPackingMode(path=path, inputFolderNames=inputFolderNames, args=args, input_dir_index_for_filename=1)
+        ClassicPackingMode(path=path, inputFolderNames=inputFolderNames, args=args)
         return
     elif processingMode == Mode.CLASSIC:
         print("Running packer in Final Art mode...")

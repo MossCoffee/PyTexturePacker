@@ -175,7 +175,7 @@ class PackerInterface(object):
         return filenames
 
     #the labels on this function are so bad, I regret everything
-    def packWithMatchingUVs(self, input_dir_list, image_output_path, json_output_path, input_base_path, input_dir_index_for_filename=0):
+    def packWithMatchingUVs(self, input_dir_list, image_output_path, json_output_path, input_base_path, uv_atlas_output_name="lines"):
         import collections
         assert len(input_dir_list) >= 2, "packWithMatchingUVs requires at least two directories"
 
@@ -204,7 +204,7 @@ class PackerInterface(object):
             atlas_list = self._pack(image_rects)
             output_name = dir
 
-            outputFilenames = self.export_atlas(atlas_list, output_name, input_base_path + "\\" + image_output_path, input_base_path + "\\" + json_output_path, input_base_path, input_dir_index_for_filename == directory_list_index)
+            outputFilenames = self.export_atlas(atlas_list, uv_atlas_output_name, input_base_path + "\\" + image_output_path, input_base_path + "\\" + json_output_path, input_base_path, directory_list_index == 0)
 
             directory_list_index += 1
         return outputFilenames
