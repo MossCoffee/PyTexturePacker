@@ -15,8 +15,7 @@ import argparse
 import os
 import shutil
 import json
-from PIL import Image
-from PIL import ImageColor
+from PIL import Image, ImageColor, ImageFilter
 import PIL.ImageOps
 from enum import Enum
 
@@ -326,6 +325,10 @@ def ClassicPackingMode(path,inputFolderNames,args):
     createNormalMapBase("colors", "masks", "lines", workingDir=intermediateFilePath, outputFilename="normal_map_base")
     #generate normals using the temp variant
     NormalMapGen.generateNormals("normal_map_base", path, "\\intermediate\\", "\\output\\", args.smooth, args.intensity)
+    #normal map blur
+    normal_map= Image.open(outputFilePath + "normals.png")
+    blurImage = normal_map.filter(ImageFilter.GaussianBlur(15))
+    blurImage.save(outputFilePath + "normals.png")
     return
 
 def SketchesOnlyPackingMode(path, inputFolderNames, args):
@@ -417,7 +420,7 @@ def main():
         ClassicPackingMode(path=path, inputFolderNames=inputFolderNames, args=args)
         return
     elif processingMode == Mode.CLASSIC:
-        print("Running packer in Final Art mode...")
+        print("Running packer in Classic mode...")
         ClassicPackingMode(path=path, inputFolderNames=inputFolderNames, args=args)
         return
     else:
